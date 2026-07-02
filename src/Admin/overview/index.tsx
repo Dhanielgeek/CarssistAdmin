@@ -1,6 +1,6 @@
-import Sparkline from "../Components/sparkline"
-import PieChart from "../Components/piechart"
-import BarChart from "../Components/barchart"
+import Sparkline from "../../Components/Charts/sparkline"
+import PieChart from "../../Components/Charts/piechart"
+import BarChart from "../../Components/Charts/barchart"
 import { Star, CloudDownload } from "lucide-react"
 
 const spark1 = [30, 45, 38, 55, 48, 60, 52, 70, 65, 80]

@@ -1,23 +1,65 @@
+import { useNavigate, useLocation } from "react-router-dom";
+
+// topbarTabs.ts
+
+
+const getTabs = (pathname: string) => {
+  if (pathname.startsWith("/admin/users")) {
+    return topbarTabs.users;
+  }
+
+  if (pathname.startsWith("/admin/track")) {
+    return topbarTabs.tracking;
+  }
+
+  if (pathname.startsWith("/admin/properties")) {
+    return topbarTabs.properties;
+  }
+
+  return topbarTabs.home;
+};
+
+export const topbarTabs = {
 
 
 
-// import { Bell, ChevronDown } from "lucide-react";
 
-// interface TopbarProps {
-//   openSidebar: boolean;
-//   setopenSidebar: (val: boolean) => void;
-// }
 
-const tabs = [
-  "Overview",
-  "Performance Reports",
-  "Financial Reports",
-  "User Reports",
-  "Customer Satisfaction",
-];
+  home: [
+    { label: "Overview", path: "/admin/overview" },
+    { label: "Performance Reports", path: "/admin/performance-reports" },
+    { label: "Financial Reports", path: "/admin/financial-reports" },
+    { label: "User Reports", path: "/admin/user-reports" },
+    { label: "Customer Satisfaction", path: "/admin/customer-satisfaction" },
+  ],
+
+  users: [
+    { label: "All Customers", path: "/admin/users" },
+    { label: "Carssist Riders", path: "/admin/users/customers" },
+    { label: "Agents", path: "/admin/users/agents" },
+    { label: "Admins", path: "/admin/users/admins" },
+  ],
+
+  tracking: [
+    { label: "Track Requests", path: "/admin/track" },
+    { label: "History", path: "/admin/track/history" },
+  ],
+
+  properties: [
+    { label: "Overview", path: "/admin/properties" },
+    { label: "Pending", path: "/admin/properties/pending" },
+    { label: "Approved", path: "/admin/properties/approved" },
+    { label: "Rejected", path: "/admin/properties/rejected" },
+  ],
+};
 
 // const Topbar = ({ openSidebar }: TopbarProps) => {
 const Topbar = () => {
+const location = useLocation();
+const nav = useNavigate();
+
+const tabs = getTabs(location.pathname);
+
   return (
     <header
       className="flex items-center justify-between px-5 border-b"
@@ -34,72 +76,25 @@ const Topbar = () => {
     >
       {/* Tabs */}
       <nav className="flex items-center gap-1 h-full overflow-x-auto">
-        {tabs.map((tab, i) => (
-          <button
-            key={tab}
-            className="px-4 h-full text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
-            style={{
-              borderBottomColor: i === 0 ? "#007AFF" : "transparent",
-              color: i === 0 ? "#007AFF" : "#8b94b2",
-            }}
-          >
-            {tab}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const isActive = location.pathname === tab.path;
+          return (
+            <button
+              key={tab.path}
+              className="px-4 h-full text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+              style={{
+             borderBottomColor: isActive ? "#007AFF" : "transparent",
+          color: isActive ? "#007AFF" : "#8b94b2",
+              }}
+              onClick={() => nav(tab.path)}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </nav>
 
-      {/* Right Side */}
-      {/*
-      <div className="flex items-center gap-3 shrink-0">
-        <button
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium"
-          style={{ background: "#f5f6fa", color: "#555e7a" }}
-        >
-          <span>Sort</span>
-          <ChevronDown size={14} />
-        </button>
-
-        <button
-          className="relative p-2 rounded-lg"
-          style={{ background: "#f5f6fa" }}
-        >
-          <Bell size={16} style={{ color: "#555e7a" }} />
-          <span
-            className="absolute top-1 right-1 rounded-full"
-            style={{
-              width: 6,
-              height: 6,
-              background: "#e8a838",
-            }}
-          />
-        </button>
-
-        <div className="flex items-center gap-2">
-          <div
-            className="rounded-full flex items-center justify-center text-white text-xs font-bold"
-            style={{
-              width: 32,
-              height: 32,
-              background: "#e8a838",
-            }}
-          >
-            JD
-          </div>
-
-          <span
-            className="text-sm font-medium"
-            style={{ color: "#2d3452" }}
-          >
-            John Doe
-          </span>
-
-          <ChevronDown
-            size={14}
-            style={{ color: "#8b94b2" }}
-          />
-        </div>
-      </div>
-      */}
+  
     </header>
   );
 };

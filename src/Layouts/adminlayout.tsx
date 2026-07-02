@@ -2,17 +2,21 @@
 import Sidebar from "../Components/Sidebar"
 import Topbar from "../Components/Topbar"
 import RightPanel from "../Components/Rightpanel"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 
 const Adminlayout = () => {
   // const [openSidebar, setopenSidebar] = useState(false)
   // const sideW = openSidebar ? 200 : 60
   // const rightW = 220
 
+    const location = useLocation();
+
+  const showRightPanel = location.pathname === "/admin/overview";
+
   return (
     <div className="min-h-screen" style={{ background: "#f5f6fa" }}>
       <Sidebar  />
-      <RightPanel />
+      {showRightPanel && <RightPanel />}
  {/* openSidebar={openSidebar} setopenSidebar={setopenSidebar} */}
       <div
         style={{

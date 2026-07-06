@@ -7,6 +7,11 @@ import UserReports from "../Admin/overview/userreports"
 import FinancialReports from "../Admin/overview/financialreports"
 import CustomerSatisfaction from "../Admin/overview/customersatisfaction"
 import MainUsers from "../Admin/users"
+import RidersPage from "../Admin/users/riderspage"
+import Chauffersriders from "../Admin/users/chauffersriders"
+import Motorist from "../Admin/users/motorist"
+import Track from "../Admin/track"
+
 
 const routes = createBrowserRouter([
     {
@@ -40,6 +45,25 @@ const routes = createBrowserRouter([
             {
                 path: "users",
                 element: <MainUsers/>
+            }, 
+            {
+                path: 'users/carsist-riders',
+                element: 
+                    <RidersPage
+                    />
+                
+            }, 
+            {
+                path: "users/chauffers-riders",
+                element: <Chauffersriders/>
+            }, 
+            {
+                path: "users/motorists",
+                element: <Motorist/>
+            }, 
+            {
+                path: "track",
+                element:<Track/>
             }
         ]
     }

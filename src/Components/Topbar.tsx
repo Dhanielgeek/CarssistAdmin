@@ -35,9 +35,9 @@ export const topbarTabs = {
 
   users: [
     { label: "All Customers", path: "/admin/users" },
-    { label: "Carssist Riders", path: "/admin/users/customers" },
-    { label: "Agents", path: "/admin/users/agents" },
-    { label: "Admins", path: "/admin/users/admins" },
+    { label: "Carssist Riders", path: "/admin/users/carsist-riders" },
+    { label: "Chauffers Riders", path: "/admin/users/chauffers-riders" },
+    { label: "Motorists", path: "/admin/users/motorists" },
   ],
 
   tracking: [

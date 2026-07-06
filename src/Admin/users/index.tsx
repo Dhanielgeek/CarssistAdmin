@@ -8,6 +8,7 @@ import {
   Check,
 } from "lucide-react"
 
+
 // ─── types & mock data ──────────────────────────────────────────────────────
 
 type Status = "Active" | "Inactive" | "Guest"
@@ -169,6 +170,9 @@ const MainUsers = () => {
   const allChecked = selected.size === rows.length
   const someChecked = selected.size > 0 && !allChecked
 
+
+  console.log("somechecked item", someChecked)
+
   const toggleAll = () => {
     setSelected(allChecked ? new Set() : new Set(rows.map((r) => r.id)))
   }
@@ -189,10 +193,10 @@ const MainUsers = () => {
   const rangeEnd = Math.min(page * PAGE_SIZE, TOTAL_ROWS)
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 mt-4 px-5">
       {/* ── header ── */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <p className="text-sm" style={{ color: "#4a5474" }}>
+      <div className="flex items-center justify-between gap-4 ">
+        <p className="text-xs" style={{ color: "#4a5474" }}>
           All Carssist Customers who request assistance or Chauffeur Service including motorists
         </p>
 

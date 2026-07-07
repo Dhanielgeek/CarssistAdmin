@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import person from '../assets/carsisitadpic.jpg'
+import logo from '../assets/carsisstlogo.png'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,12 +19,7 @@ const Login = () => {
       <div className="w-full md:w-[45%] flex flex-col px-10 py-8 bg-white">
         {/* Logo */}
         <div className="flex items-center gap-1.5 mb-16">
-          <div className="w-6 h-6 rounded-full border-2 border-blue-500 flex items-center justify-center">
-            <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
-          </div>
-          <span className="text-sm font-bold tracking-widest text-gray-800 uppercase">
-            Carssist
-          </span>
+        <img src={logo} alt="Logo" className="h-20 w-auto" />
         </div>
 
         {/* Form */}

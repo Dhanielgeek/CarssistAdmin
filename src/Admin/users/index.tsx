@@ -6,8 +6,8 @@ import {
   ArrowUpDown,
   MoreVertical,
   Check,
+  X,
 } from "lucide-react"
-
 
 // ─── types & mock data ──────────────────────────────────────────────────────
 
@@ -103,6 +103,11 @@ const statusColor: Record<Status, string> = {
   Guest: "#e8a838",
 }
 
+const accountTypeLabel: Record<UserRow["accountType"], string> = {
+  Motorist: "Motorist",
+  "Service P.": "Service Provider (Chauffeur)",
+}
+
 // ─── small pieces ───────────────────────────────────────────────────────────
 
 function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -131,7 +136,15 @@ function StatusBadge({ status }: { status: Status }) {
   )
 }
 
-function RowMenu({ status, onClose }: { status: Status; onClose: () => void }) {
+function RowMenu({
+  status,
+  onClose,
+  onViewUser,
+}: {
+  status: Status
+  onClose: () => void
+  onViewUser: () => void
+}) {
   const options =
     status === "Guest"
       ? ["View User", "Download All User Data"]
@@ -147,11 +160,145 @@ function RowMenu({ status, onClose }: { status: Status; onClose: () => void }) {
         <button
           key={opt}
           className="w-full text-left px-3 py-2 hover:bg-[#f5f7fb]"
-          onClick={onClose}
+          onClick={() => {
+            if (opt === "View User") {
+              onViewUser()
+            }
+            onClose()
+          }}
         >
           {opt}
         </button>
       ))}
+    </div>
+  )
+}
+
+// ─── user detail modal ──────────────────────────────────────────────────────
+
+const TABS = [
+  "Overview",
+  "Personal Information",
+  "Service History",
+  "Feedback and Ratings",
+  "Payment",
+  "Payouts",
+] as const
+
+function UserDetailModal({ user, onClose }: { user: UserRow; onClose: () => void }) {
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("Overview")
+
+  const isServiceProvider = user.accountType === "Service P."
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-3xl rounded-lg bg-white border-2 p-6"
+        style={{ borderColor: "#0057b8" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Title */}
+        <h2 className="text-sm font-semibold mb-4" style={{ color: "#2d3452" }}>
+          {user.name} ({isServiceProvider ? "Service Provider" : "Motorist"})
+        </h2>
+
+    {/* Tabs */}
+<div
+  className="inline-flex items-center rounded-full border mb-6"
+  style={{ borderColor: "#979797" }}
+>
+  {TABS.map((tab, idx) => (
+    <div key={tab} className="flex items-center">
+      {idx > 0 && (
+        <span className="h-4 w-px" style={{ background: "#e2e6ee" }} />
+      )}
+      <button
+        onClick={() => setActiveTab(tab)}
+        className="px-4 py-2 text-xs font-medium whitespace-nowrap transition-colors rounded-full"
+        style={
+          activeTab === tab
+            ? { background: "#0f172a", color: "#fff" }
+            : { background: "transparent", color: "#8b94b2" }
+        }
+      >
+        {tab}
+      </button>
+    </div>
+  ))}
+</div>
+
+        {/* Content */}
+        {activeTab === "Overview" ? (
+          <div className="flex flex-col gap-5">
+            <img
+              src={`https://i.pravatar.cc/150?u=${user.id}`}
+              alt={user.name}
+              className="w-24 h-24 rounded-md object-cover"
+              style={{ background: "#c9b8e8" }}
+            />
+
+            <div className="flex flex-col gap-4 text-xs">
+              <div>
+                <p className="font-semibold" style={{ color: "#2d3452" }}>
+                  Full Name:
+                </p>
+                <p style={{ color: "#4a5474" }}>{user.name}</p>
+              </div>
+
+              <div>
+                <p style={{ color: "#2d3452" }}>
+                  <span className="font-semibold">Account Type:</span>{" "}
+                  {accountTypeLabel[user.accountType]}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-semibold" style={{ color: "#2d3452" }}>
+                  Email Address:
+                </p>
+                <p style={{ color: "#4a5474" }}>{user.email}</p>
+              </div>
+
+              <div>
+                <p className="font-semibold" style={{ color: "#2d3452" }}>
+                  Account Status:
+                </p>
+                <p style={{ color: "#4a5474" }}>{user.status}</p>
+              </div>
+
+              <div>
+                <p className="font-semibold" style={{ color: "#2d3452" }}>
+                  Registration Date:
+                </p>
+                <p style={{ color: "#4a5474" }}>{user.regDate}</p>
+              </div>
+
+              <div>
+                <p className="font-semibold" style={{ color: "#2d3452" }}>
+                  Last Login:
+                </p>
+                <p style={{ color: "#4a5474" }}>{user.lastLogin}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs py-8 text-center" style={{ color: "#8b94b2" }}>
+            {activeTab} content coming soon.
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -166,12 +313,12 @@ const MainUsers = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [page, setPage] = useState(1)
+  const [viewingUser, setViewingUser] = useState<UserRow | null>(null)
 
   const allChecked = selected.size === rows.length
   const someChecked = selected.size > 0 && !allChecked
 
-
-  console.log("somechecked item", someChecked)
+  console.log("checked", someChecked)
 
   const toggleAll = () => {
     setSelected(allChecked ? new Set() : new Set(rows.map((r) => r.id)))
@@ -316,7 +463,11 @@ const MainUsers = () => {
                         <MoreVertical size={15} />
                       </button>
                       {openMenu === row.id && (
-                        <RowMenu status={row.status} onClose={() => setOpenMenu(null)} />
+                        <RowMenu
+                          status={row.status}
+                          onClose={() => setOpenMenu(null)}
+                          onViewUser={() => setViewingUser(row)}
+                        />
                       )}
                     </td>
                   </tr>
@@ -351,6 +502,11 @@ const MainUsers = () => {
           </button>
         </div>
       </div>
+
+      {/* ── user detail modal ── */}
+      {viewingUser && (
+        <UserDetailModal user={viewingUser} onClose={() => setViewingUser(null)} />
+      )}
     </div>
   )
 }

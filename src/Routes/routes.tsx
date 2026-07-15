@@ -8,9 +8,10 @@ import FinancialReports from "../Admin/overview/financialreports"
 import CustomerSatisfaction from "../Admin/overview/customersatisfaction"
 import MainUsers from "../Admin/users"
 import RidersPage from "../Admin/users/riderspage"
-import Chauffersriders from "../Admin/users/chauffersriders"
-import Motorist from "../Admin/users/motorist"
+import Chauffersriders from "../Admin/users/Providers"
+
 import Track from "../Admin/track"
+import Bookings from "../Admin/Bookings"
 
 
 const routes = createBrowserRouter([
@@ -54,17 +55,19 @@ const routes = createBrowserRouter([
                 
             }, 
             {
-                path: "users/chauffers-riders",
+                path: "users/providers",
                 element: <Chauffersriders/>
             }, 
-            {
-                path: "users/motorists",
-                element: <Motorist/>
-            }, 
+          
             {
                 path: "track",
                 element:<Track/>
+            },
+            {
+                path: "schedule",
+                element:<Bookings/>
             }
+
         ]
     }
 ])

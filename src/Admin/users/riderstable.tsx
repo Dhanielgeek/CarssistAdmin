@@ -1,7 +1,10 @@
 import { ChevronDown, MoreVertical, Search, Download, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Rider, SortState } from '../../types/rider';
 import StatusBadge from '../../Components/statusbadge';
+import axios from "../../Config/axiosconfig";
+import toast from "react-hot-toast";
+
 
 interface Column {
   key: keyof Rider;
@@ -24,7 +27,7 @@ const COLUMNS: Column[] = [
 ];
 
 interface RidersTableProps {
-  riders: Rider[];
+
   selectedIds: Set<string>;
   onToggleRow: (id: string) => void;
   onToggleAll: () => void;
@@ -37,24 +40,34 @@ interface RidersTableProps {
 }
 
 export default function RidersTable({
-  riders,
+
   selectedIds,
   onToggleRow,
   onToggleAll,
   sort,
   onSort,
 }: RidersTableProps) {
-  const allSelected =
-    riders.length > 0 && riders.every((r) => selectedIds.has(r.id));
+
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  const [providers, setProviders] = useState<Rider[]>([]);
+const [totalProviders, setTotalProviders] = useState(0);
+console.log(totalProviders);
+
   const rowsPerPage = 10;
 
+
+    const allSelected =
+    providers.length > 0 && providers.every((r) => selectedIds.has(r.id));
+
   const filteredRiders = useMemo(() => {
-    return riders.filter((rider) => {
+    return providers.filter((rider) => {
       const matchesSearch =
         rider.name.toLowerCase().includes(search.toLowerCase()) ||
         rider.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -65,7 +78,7 @@ export default function RidersTable({
 
       return matchesSearch && matchesStatus;
     });
-  }, [riders, search, statusFilter]);
+  }, [providers, search, statusFilter]);
 
   const totalPages = Math.ceil(filteredRiders.length / rowsPerPage);
 
@@ -74,6 +87,101 @@ export default function RidersTable({
     currentPage * rowsPerPage
   );
 
+
+  const token = localStorage.getItem("token")
+  
+const getAllProviders = async () => {
+  try {
+    const res = await axios.get("/admin/providers", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = res.data.data;
+
+    setTotalProviders(data.total);
+
+    const mappedProviders: Rider[] = data.providers.map((provider: any) => ({
+      id: String(provider.id),
+      regDate: provider.created_at,
+      userId: String(provider.id),
+      name: provider.name,
+      email: provider.email,
+      phoneNo: provider.phone,
+      country: provider.country ?? "-",
+      state: provider.state ?? "-",
+      assists: provider.assists ?? 0,
+      averageRating: provider.average_rating ?? 0,
+      serviceArea: provider.service_area ?? "-",
+      lastLogin: provider.last_login ?? "-",
+      acStatus: provider.status,
+    }));
+
+    setProviders(mappedProviders);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  useEffect(()=>{
+getAllProviders()
+  },[])
+
+ 
+
+const ApproveProvider = async (user_id: number) => {
+  const promise = axios.patch(
+    "/admin/provider/approve",
+    { user_id },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  toast.promise(promise, {
+    loading: "Approving provider...",
+    success: (res) => {
+      getAllProviders();
+      return res.data.message || "Provider approved successfully";
+    },
+    error: (err) =>
+      err.response?.data?.message || "Failed to approve provider",
+  });
+};
+
+const SuspendProvider = async (
+  user_id: number,
+  reason: string
+) => {
+  const promise = axios.patch(
+    "/admin/provider/suspend",
+    {
+      user_id,
+      reason,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  toast.promise(promise, {
+    loading: "Suspending provider...",
+    success: (res) => {
+      getAllProviders();
+      return res.data.message || "Provider suspended successfully";
+    },
+    error: (err) =>
+      err.response?.data?.message || "Failed to suspend provider",
+  });
+};
+
+
+  
   return (
     <div className=" px-4">
 
@@ -193,18 +301,50 @@ export default function RidersTable({
                   <td className="whitespace-nowrap px-4 py-3">
                     <StatusBadge status={rider.acStatus} />
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
-                    <button type="button" className="rounded p-1 hover:bg-slate-100" aria-label="Row actions">
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </td>
+                <td className="relative px-4 py-3">
+  <button
+    onClick={() =>
+      setOpenMenu(openMenu === rider.id ? null : rider.id)
+    }
+    className="rounded p-1 hover:bg-slate-100"
+  >
+    <MoreVertical className="h-4 w-4" />
+  </button>
+
+  {openMenu === rider.id && (
+    <div className="absolute right-4 top-9 z-20 w-36 rounded-lg border bg-white shadow-lg">
+      <button
+        onClick={() => {
+          ApproveProvider(Number(rider.userId));
+          setOpenMenu(null);
+        }}
+        className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+      >
+        Approve
+      </button>
+
+      <button
+        onClick={() => {
+          SuspendProvider(
+            Number(rider.userId),
+            "Violation of community guidelines"
+          );
+          setOpenMenu(null);
+        }}
+        className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+      >
+        Suspend
+      </button>
+    </div>
+  )}
+</td>
                 </tr>
               );
             })}
             {filteredRiders.length === 0 && (
               <tr>
                 <td colSpan={COLUMNS.length + 2} className="px-4 py-10 text-center text-xs text-slate-400">
-                  No riders match your search.
+                  No Providers match your search.
                 </td>
               </tr>
             )}

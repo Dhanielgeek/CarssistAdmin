@@ -16,6 +16,10 @@ const getTabs = (pathname: string) => {
     return topbarTabs.properties;
   }
 
+  if(pathname.startsWith("/admin/schedule")){
+    return topbarTabs.schedules
+  }
+
   return topbarTabs.home;
 };
 
@@ -35,9 +39,9 @@ export const topbarTabs = {
 
   users: [
     { label: "All Customers", path: "/admin/users" },
-    { label: "Carssist Riders", path: "/admin/users/carsist-riders" },
-    { label: "Chauffers Riders", path: "/admin/users/chauffers-riders" },
-    { label: "Motorists", path: "/admin/users/motorists" },
+    
+    { label: "Providers", path: "/admin/users/providers" },
+   
   ],
 
   tracking: [
@@ -51,6 +55,10 @@ export const topbarTabs = {
     { label: "Approved", path: "/admin/properties/approved" },
     { label: "Rejected", path: "/admin/properties/rejected" },
   ],
+  schedules: [
+{    label: "Schedules", path: "/admin/schedule"}
+  ],
+
 };
 
 // const Topbar = ({ openSidebar }: TopbarProps) => {

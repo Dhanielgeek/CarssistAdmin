@@ -8,6 +8,10 @@ import {
   Check,
   X,
 } from "lucide-react"
+import axios from '../../Config/axiosconfig'
+import {useEffect } from 'react'
+import { parsePhoneNumber } from "libphonenumber-js";
+import flags from "react-phone-number-input/flags";
 
 // ─── types & mock data ──────────────────────────────────────────────────────
 
@@ -15,7 +19,7 @@ type Status = "Active" | "Inactive" | "Guest"
 
 type UserRow = {
   id: string
-  regDate: string
+  created_at: string
   userId: string
   name: string
   email: string
@@ -66,7 +70,7 @@ const statuses: Status[] = [
 
 const rows: UserRow[] = Array.from({ length: 14 }, (_, i) => ({
   id: `row-${i}`,
-  regDate: "12/04/2024",
+  created_at: "12/04/2024",
   userId: "123456789",
   name: "James Adeleke",
   email: "Jamesadeleke@gmail.com",
@@ -125,6 +129,8 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   )
 }
 
+
+
 function StatusBadge({ status }: { status: Status }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -174,6 +180,48 @@ function RowMenu({
   )
 }
 
+
+function PhoneWithFlag({ phone }: { phone?: string }) {
+  if (!phone) {
+    return (
+      <input
+        readOnly
+        value=""
+        className="w-full rounded-full border border-[#E9E9E9] px-4 py-3 text-sm"
+      />
+    );
+  }
+
+  let country: string | undefined;
+
+  try {
+    country = parsePhoneNumber(phone)?.country;
+  } catch {}
+
+  const Flag =
+    country && flags[country as keyof typeof flags]
+      ? flags[country as keyof typeof flags]
+      : null;
+
+  return (
+    <div className="flex items-center gap-3 rounded-full border border-[#E9E9E9] px-4 py-3">
+      {Flag ? (
+  <div className="flex h-5 w-7 items-center justify-center overflow-hidden rounded-sm">
+  <Flag title={country ?? ""} />
+</div>
+      ) : (
+        <div className="w-7 h-5 rounded bg-gray-200" />
+      )}
+
+      <input
+        readOnly
+        value={phone}
+        className="flex-1 bg-transparent outline-none text-sm"
+      />
+    </div>
+  );
+}
+
 // ─── user detail modal ──────────────────────────────────────────────────────
 
 const TABS = [
@@ -196,7 +244,7 @@ function UserDetailModal({ user, onClose }: { user: UserRow; onClose: () => void
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl rounded-lg bg-white border-2 p-6"
+        className="relative w-full max-w-3xl max-h-[90vh]  flex flex-col rounded-md bg-white border-2 p-6"
         style={{ borderColor: "#0057b8" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -226,7 +274,7 @@ function UserDetailModal({ user, onClose }: { user: UserRow; onClose: () => void
       )}
       <button
         onClick={() => setActiveTab(tab)}
-        className="px-4 py-2 text-xs font-medium whitespace-nowrap transition-colors rounded-full"
+        className="px-4 py-2 text-xs font-medium whitespace-nowrap transition-colors rounded-md"
         style={
           activeTab === tab
             ? { background: "#0f172a", color: "#fff" }
@@ -239,65 +287,183 @@ function UserDetailModal({ user, onClose }: { user: UserRow; onClose: () => void
   ))}
 </div>
 
-        {/* Content */}
-        {activeTab === "Overview" ? (
-          <div className="flex flex-col gap-5">
-            <img
-              src={`https://i.pravatar.cc/150?u=${user.id}`}
-              alt={user.name}
-              className="w-24 h-24 rounded-md object-cover"
-              style={{ background: "#c9b8e8" }}
-            />
+    {/* Content */}
+<div className="overflow-y-auto flex-1 pr-2">
+  {activeTab === "Overview" ? (
+    <div className="flex flex-col gap-5">
+      <img
+        src={`https://i.pravatar.cc/150?u=${user.id}`}
+        alt={user.name}
+        className="w-24 h-24 rounded-md object-cover"
+        style={{ background: "#c9b8e8" }}
+      />
 
-            <div className="flex flex-col gap-4 text-xs">
-              <div>
-                <p className="font-semibold" style={{ color: "#2d3452" }}>
-                  Full Name:
-                </p>
-                <p style={{ color: "#4a5474" }}>{user.name}</p>
-              </div>
+      <div className="flex flex-col gap-4 text-xs">
+        <div>
+          <p className="font-semibold text-slate-700">Full Name</p>
+          <p className="text-slate-500">{user.name}</p>
+        </div>
 
-              <div>
-                <p style={{ color: "#2d3452" }}>
-                  <span className="font-semibold">Account Type:</span>{" "}
-                  {accountTypeLabel[user.accountType]}
-                </p>
-              </div>
+        <div>
+          <p className="font-semibold text-slate-700">Account Type</p>
+          <p className="text-slate-500">
+            {accountTypeLabel[user.accountType]}
+          </p>
+        </div>
 
-              <div>
-                <p className="font-semibold" style={{ color: "#2d3452" }}>
-                  Email Address:
-                </p>
-                <p style={{ color: "#4a5474" }}>{user.email}</p>
-              </div>
+        <div>
+          <p className="font-semibold text-slate-700">Email Address</p>
+          <p className="text-slate-500">{user.email}</p>
+        </div>
 
-              <div>
-                <p className="font-semibold" style={{ color: "#2d3452" }}>
-                  Account Status:
-                </p>
-                <p style={{ color: "#4a5474" }}>{user.status}</p>
-              </div>
+        <div>
+          <p className="font-semibold text-slate-700">Account Status</p>
+          <p className="text-slate-500">{user.status}</p>
+        </div>
 
-              <div>
-                <p className="font-semibold" style={{ color: "#2d3452" }}>
-                  Registration Date:
-                </p>
-                <p style={{ color: "#4a5474" }}>{user.regDate}</p>
-              </div>
+        <div>
+          <p className="font-semibold text-slate-700">Registration Date</p>
+          <p className="text-slate-500">
+            {user.created_at  || "N/A"}
+          </p>
+        </div>
 
-              <div>
-                <p className="font-semibold" style={{ color: "#2d3452" }}>
-                  Last Login:
-                </p>
-                <p style={{ color: "#4a5474" }}>{user.lastLogin}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-xs py-8 text-center" style={{ color: "#8b94b2" }}>
-            {activeTab} content coming soon.
-          </div>
-        )}
+        <div>
+          <p className="font-semibold text-slate-700">Phone Number</p>
+          <p className="text-slate-500">{user.phone || "N/A"}</p>
+        </div>
+      </div>
+    </div>
+  ) : activeTab === "Personal Information" ? (
+    <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex-1 space-y-4">
+        <div>
+       
+          <input
+            readOnly
+            value={user.name?.split(" ")[0] || ""}
+            className="w-full rounded-full border border-[#E9E9E9] px-4 py-3 text-sm"
+          />
+        </div>
+
+        <div>
+      
+          <input
+            readOnly
+            value={user.name?.split(" ").slice(1).join(" ") || ""}
+            className="w-full rounded-full border border-[#E9E9E9] px-4 py-3 text-sm"
+          />
+        </div>
+
+        <div>
+         
+      <PhoneWithFlag phone={user.phone} />
+        </div>
+
+        <div>
+        
+          <input
+            readOnly
+            value={user.email || ""}
+            className="w-full rounded-full border border-[#E9E9E9] px-4 py-3 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium mb-2">
+            Registration Date
+          </label>
+          <input
+            readOnly
+            value={user.created_at  || ""}
+            className="w-full rounded-full border border-[#E9E9E9] px-4 py-3 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="w-full md:w-64">
+        <label className="block text-xs font-semibold mb-2">
+          Account Status
+        </label>
+
+        <select
+          value={user.status}
+          disabled
+          className="w-full rounded-md border border-[#E9E9E9] px-3 py-2 bg-white"
+        >
+          <option>Active</option>
+          <option>Inactive</option>
+        </select>
+      </div>
+    </div>
+  ) : activeTab === "Service History" ? (
+    <div>
+      <h3 className="font-semibold text-sm mb-4">Service History</h3>
+
+      <div className="border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-4 bg-slate-50 p-3 text-xs font-semibold">
+          <div>Date</div>
+          <div>Service</div>
+          <div>Status</div>
+          <div>Amount</div>
+        </div>
+
+        <div className="py-10 text-center text-slate-400 text-sm">
+          No service history available.
+        </div>
+      </div>
+    </div>
+  ) : activeTab === "Feedback and Ratings" ? (
+    <div className="border rounded-lg p-10 text-center">
+      <div className="text-5xl mb-4">⭐</div>
+
+      <h3 className="font-semibold text-lg">No Ratings Yet</h3>
+
+      <p className="text-slate-400 mt-2">
+        This user has not received any ratings or feedback.
+      </p>
+    </div>
+  ) : activeTab === "Payment" ? (
+    <div>
+      <h3 className="font-semibold text-sm mb-4">Payment History</h3>
+
+      <div className="border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-5 bg-slate-50 p-3 text-xs font-semibold">
+          <div>Reference</div>
+          <div>Date</div>
+          <div>Method</div>
+          <div>Amount</div>
+          <div>Status</div>
+        </div>
+
+        <div className="py-10 text-center text-slate-400 text-sm">
+          No payment records found.
+        </div>
+      </div>
+    </div>
+  ) : activeTab === "Payouts" ? (
+    <div>
+      <h3 className="font-semibold text-sm mb-4">Payout History</h3>
+
+      <div className="border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-4 bg-slate-50 p-3 text-xs font-semibold">
+          <div>Date</div>
+          <div>Bank</div>
+          <div>Amount</div>
+          <div>Status</div>
+        </div>
+
+        <div className="py-10 text-center text-slate-400 text-sm">
+          No payout records available.
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className="border border-dashed rounded-lg py-10 text-center">
+      <p className="text-slate-400">No data available.</p>
+    </div>
+  )}
+</div>
       </div>
     </div>
   )
@@ -305,24 +471,74 @@ function UserDetailModal({ user, onClose }: { user: UserRow; onClose: () => void
 
 // ─── main ───────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 14
+// const PAGE_SIZE = 14
 const TOTAL_ROWS = 40
 
 const MainUsers = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set(rows.slice(0, 6).map((r) => r.id)))
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [users, setUsers] = useState<UserRow[]>([])
+const [totalRows, setTotalRows] = useState(0)
+const [pageSize, setPageSize] = useState(20)
+const [totalPages, setTotalPages] = useState(1)
+console.log(totalPages)
   const [query, setQuery] = useState("")
   const [page, setPage] = useState(1)
   const [viewingUser, setViewingUser] = useState<UserRow | null>(null)
 
-  const allChecked = selected.size === rows.length
+  const allChecked = selected.size === users.length
   const someChecked = selected.size > 0 && !allChecked
 
   console.log("checked", someChecked)
 
   const toggleAll = () => {
-    setSelected(allChecked ? new Set() : new Set(rows.map((r) => r.id)))
+    setSelected(allChecked ? new Set() : new Set(users.map((r) => r.id)))
   }
+
+  const token = localStorage.getItem("token")
+
+const getAllUsers = async () => {
+  try {
+    const res = await axios.get("/admin/users", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = res.data.data;
+
+    setTotalRows(data.total);
+    setPageSize(data.record_per_page);
+    setTotalPages(data.number_pages);
+
+    const mappedUsers: UserRow[] = data.users.map((user: any) => ({
+      id: String(user.id),
+      userId: String(user.id),
+      created_at: user.created_at,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      status: user.status as Status,
+
+      // These aren't returned yet
+      country: "-",
+      state: "-",
+      serviceArea: "-",
+      accountType: "Motorist",
+      requests: 0,
+      avgRating: "-",
+      lastLogin: "-",
+    }));
+
+    setUsers(mappedUsers);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  useEffect(()=>{
+    getAllUsers()
+  },[])
 
   const toggleRow = (id: string) => {
     setSelected((prev) => {
@@ -332,12 +548,16 @@ const MainUsers = () => {
     })
   }
 
-  const filteredRows = query
-    ? rows.filter((r) => r.name.toLowerCase().includes(query.toLowerCase()) || r.email.toLowerCase().includes(query.toLowerCase()))
-    : rows
+const filteredRows = query
+  ? users.filter(
+      (r) =>
+        r.name.toLowerCase().includes(query.toLowerCase()) ||
+        r.email.toLowerCase().includes(query.toLowerCase())
+    )
+  : users;
 
-  const rangeStart = (page - 1) * PAGE_SIZE + 1
-  const rangeEnd = Math.min(page * PAGE_SIZE, TOTAL_ROWS)
+  const rangeStart = (page - 1) * pageSize + 1
+ const rangeEnd = Math.min(page * pageSize, totalRows)
 
   return (
     <div className="flex flex-col gap-4 mt-4 px-5">
@@ -417,7 +637,7 @@ const MainUsers = () => {
                       <Checkbox checked={isChecked} onChange={() => toggleRow(row.id)} />
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap" style={{ color: isGuest ? "#c3c9d6" : "#2d3452" }}>
-                      {row.regDate}
+                      {row.created_at}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap" style={{ color: isGuest ? "#c3c9d6" : "#2d3452" }}>
                       {row.userId}
@@ -481,7 +701,7 @@ const MainUsers = () => {
       {/* ── pagination ── */}
       <div className="flex items-center justify-between">
         <span className="text-xs" style={{ color: "#8b94b2" }}>
-          {rangeStart} - {rangeEnd} of {TOTAL_ROWS} Pages
+       {rangeStart} - {rangeEnd} of {totalRows}
         </span>
         <div className="flex items-center gap-2">
           <button

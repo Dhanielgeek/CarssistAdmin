@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { Rider, SortState } from "../../types/rider";
 import { riders } from "../../data/riderdata";
-import RidersTable from "../users/riderstable";
+import RidersTable from "./riderstable";
 
-const Chauffersriders = () => {
+const Providers = () => {
   const [selectedIds, setSelectedIds] = useState(new Set<string>());
 
   const [sort, setSort] = useState<SortState>({
@@ -45,7 +45,7 @@ const Chauffersriders = () => {
 
   return (
     <RidersTable
-      riders={riders}
+   
       selectedIds={selectedIds}
       onToggleRow={handleToggleRow}
       onToggleAll={handleToggleAll}
@@ -58,4 +58,4 @@ const Chauffersriders = () => {
   );
 };
 
-export default Chauffersriders;
+export default Providers;

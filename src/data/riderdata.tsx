@@ -77,5 +77,6 @@ export const riders: Rider[] = Array.from({ length: 50 }, (_, i) => {
     serviceArea: pick(SERVICE_AREAS, seed),
     lastLogin: pick(LAST_LOGIN_OPTIONS, seed),
     acStatus: pick(STATUS_OPTIONS, seed),
+    
   };
 });

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import logo from "../assets/carsisstlogo.png";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // interface SidebarProps {
 //   openSidebar: boolean;
@@ -32,11 +32,11 @@ const mainNav = [
     icon: Users,
     label: "Users",
     children: [
-      { label: "Manage Users", path: "/admin/users" },
+      { label: "All Users", path: "/admin/users" },
       { label: "Onboard New User", path: "/admin/users/onboard" },
-      { label: "Motorist", path: "/admin/users/motorists" },
-      { label: "Carssist Rider", path: "/admin/users/carssist-riders" },
-      { label: "Chauffer Rider", path: "/admin/users/chauffeur-riders" },
+     
+      { label: "Providers", path: "/admin/users/providers" },
+    
     ],
   },
 
@@ -55,11 +55,11 @@ const mainNav = [
 
   {
     icon: CalendarDays,
-    label: "Schedules",
+    label: "Bookings",
     children: [
-      { label: "Manage Schedules", path: "/admin/schedules" },
-      { label: "View All Schedules", path: "/admin/schedules/all" },
-      { label: "History", path: "/admin/schedules/history" },
+   
+      { label: "View All Bookings", path: "/admin/schedule" },
+   
     ],
   },
 ];
@@ -129,10 +129,14 @@ const othersNav = [
 
 const Sidebar = () => {
   // { openSidebar, setopenSidebar }: SidebarProps
-const [activeItem, setActiveItem] = useState("Home");
+
 const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
 const nav = useNavigate();
+const location = useLocation();
+
+
+
 
   return (
     <aside
@@ -160,19 +164,7 @@ const nav = useNavigate();
           borderRadius: 16,
         }}
       >
-        <div
-          style={{
-            // background: "linear-gradient(135deg, #1a6ff5 0%, #0d52cc 100%)",
-            // borderRadius: 16,
-            // display: "flex",
-            // alignItems: "center",
-            // gap: 10,
-            // padding: openSidebar ? "18px 14px" : "18px 0",
-            // justifyContent: openSidebar ? "flex-start" : "center",
-            // transition: "all 0.3s",
-            // minHeight: 78,
-          }}
-        >
+       
           {/* Logo */}
           <div className="h-20 flex justify-center items-center">
             <img
@@ -182,60 +174,9 @@ const nav = useNavigate();
             />
           </div>
 
-          {/* {openSidebar && (
-            <div>
-              <p
-                style={{
-                  color: "#fff",
-                  fontWeight: 800,
-                  fontSize: 17,
-                  letterSpacing: 0.8,
-                  lineHeight: 1,
-                  margin: 0,
-                }}
-              ></p>
+      
 
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.65)",
-                  fontSize: 8.5,
-                  letterSpacing: 2,
-                  marginTop: 3,
-                }}
-              ></p>
-            </div>
-          )} */}
-        </div>
-
-        {/* Collapse Toggle */}
-        {/*
-        <button
-          onClick={() => setopenSidebar(!openSidebar)}
-          style={{
-            position: "absolute",
-            right: -14,
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-            background: "#fff",
-            border: "1px solid #dde1e9",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#444",
-            letterSpacing: -1,
-            zIndex: 5,
-          }}
-        >
-          &lt;&gt;
-        </button>
-        */}
+       
       </div>
 
       {/* ── Navigation ── */}
@@ -268,14 +209,20 @@ const nav = useNavigate();
 
         </div>
 {mainNav.map(({ icon: Icon, label, children, path }) => {
-  const isActive = activeItem === label;
-  const isOpen = openDropdown === label;
+
+const isActive =
+  path === location.pathname ||
+  children?.some(child => child.path === location.pathname);
+
+  const isOpen =
+  openDropdown === label ||
+  children?.some(child => child.path === location.pathname);
 
   return (
     <div key={label}>
       <button
         onClick={() => {
-          setActiveItem(label);
+        
 
           if (children) {
             setOpenDropdown(isOpen ? null : label);
@@ -332,13 +279,13 @@ const nav = useNavigate();
           }}
         >
           {children.map((child) => {
-            const childActive = activeItem === child.label;
+            const childActive = location.pathname === child.path;
 
             return (
               <button
                 key={child.path}
                 onClick={() => {
-                  setActiveItem(child.label);
+                 
                   nav(child.path);
                 }}
                 style={{
@@ -390,20 +337,24 @@ const nav = useNavigate();
           }}
         >
  {othersNav.map(({ icon: Icon, label, children, path }) => {
-  const isActive = activeItem === label;
-  const isOpen = openDropdown === label;
+
+const isActive =
+  path === location.pathname ||
+  children?.some(child => child.path === location.pathname);
+
+const isOpen =
+  openDropdown === label ||
+  children?.some(child => child.path === location.pathname);
 
   return (
     <div key={label}>
       <button
         onClick={() => {
-          setActiveItem(label);
-
-          if (children) {
-            setOpenDropdown(isOpen ? null : label);
-          } else if (path) {
-            nav(path);
-          }
+         if (children) {
+    setOpenDropdown(isOpen ? null : label);
+  } else if (path) {
+    nav(path);
+  }
         }}
         style={{
           display: "flex",
@@ -454,13 +405,13 @@ const nav = useNavigate();
           }}
         >
           {children.map((child) => {
-            const childActive = activeItem === child.label;
+            const childActive = location.pathname === child.path;
 
             return (
               <button
                 key={child.path}
                 onClick={() => {
-                  setActiveItem(child.label);
+               
                   nav(child.path);
                 }}
                 style={{

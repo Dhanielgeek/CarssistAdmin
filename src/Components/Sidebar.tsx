@@ -33,7 +33,7 @@ const mainNav = [
     label: "Users",
     children: [
       { label: "All Users", path: "/admin/users" },
-      { label: "Onboard New User", path: "/admin/users/onboard" },
+      // { label: "Onboard New User", path: "/admin/users/onboard" },
      
       { label: "Providers", path: "/admin/users/providers" },
     
@@ -88,36 +88,14 @@ const othersNav = [
     icon: CreditCard,
     label: "Payments",
     children: [
-      { label: "Manage Payments", path: "/admin/payments" },
-      { label: "Pending Payments", path: "/admin/payments/pending" },
-      { label: "Completed Payments", path: "/admin/payments/completed" },
-      {
-        label: "Carssist User Payments",
-        path: "/admin/payments/carssist-users",
-      },
-      { label: "Rejected Payments", path: "/admin/payments/rejected" },
-      { label: "History", path: "/admin/payments/history" },
+      { label: "Payments", path: "/admin/payments" },
     ],
   },
 
   {
     icon: Banknote,
     label: "Payouts",
-    children: [
-      { label: "Manage Payouts", path: "/admin/payouts" },
-      { label: "Pending Payouts", path: "/admin/payouts/pending" },
-      { label: "Completed Payouts", path: "/admin/payouts/completed" },
-      { label: "Rejected Payouts", path: "/admin/payouts/rejected" },
-      {
-        label: "Carssist Rider Payouts",
-        path: "/admin/payouts/carssist-riders",
-      },
-      {
-        label: "Chauffer Rider Payouts",
-        path: "/admin/payouts/chauffeur-riders",
-      },
-      { label: "History", path: "/admin/payouts/history" },
-    ],
+    path: "/admin/payouts"
   },
 
   {

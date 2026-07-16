@@ -2,25 +2,33 @@ import Sparkline from "../../Components/Charts/sparkline"
 import PieChart from "../../Components/Charts/piechart"
 import BarChart from "../../Components/Charts/barchart"
 import { Star, CloudDownload } from "lucide-react"
+import { useEffect, useState } from "react";
+import axios from "../../Config/axiosconfig"
+
+
+
+
+interface Analytics {
+  total_users: number;
+  total_providers: number;
+  total_bookings: number;
+  completed_jobs: number;
+  total_revenue: string;
+}
+
+
+
 
 const spark1 = [30, 45, 38, 55, 48, 60, 52, 70, 65, 80]
 const spark2 = [20, 35, 28, 40, 38, 55, 50, 45, 58, 62]
 const spark3 = [50, 40, 45, 38, 52, 48, 55, 50, 60, 58]
 const spark4 = [10, 20, 15, 30, 22, 35, 28, 40, 36, 50]
 
-const statCards = [
-  { label: "Total Bookings", value: "10,001", spark: spark1, color: "#3b82f6" },
-  { label: "Active Users", value: "6,306", spark: spark2, color: "#22c55e" },
-  { label: "Total Properties", value: "1906", spark: spark3, color: "#e8a838" },
-  { label: "Active Properties", value: "390", spark: spark4, color: "#a855f7" },
-]
 
-const revenueCards = [
-  { label: "Daily Revenue", value: "$600", spark: spark2, color: "#22c55e" },
-  { label: "Weekly Revenue", value: "$580", spark: spark1, color: "#3b82f6" },
-  { label: "Monthly Revenue", value: "$908", spark: spark3, color: "#e8a838" },
-  { label: "Annual Revenue", value: "$280", spark: spark4, color: "#a855f7" },
-]
+
+
+
+
 
 const barData = [
   { month: "Jan", ios: 32, android: 28, web: 20 },
@@ -57,6 +65,78 @@ const regions = [
 ]
 
 const Overview = () => {
+const [analytics, setAnalytics] = useState<Analytics>({
+  total_users: 0,
+  total_providers: 0,
+  total_bookings: 0,
+  completed_jobs: 0,
+  total_revenue: "$0.00",
+});
+
+
+const revenueCards = [
+  {
+    label: "Total Revenue",
+    value: analytics.total_revenue,
+    spark: spark2,
+    color: "#22c55e",
+  },
+];
+
+
+const statCards = [
+  {
+    label: "Total Users",
+    value: analytics.total_users.toLocaleString(),
+    spark: spark1,
+    color: "#3b82f6",
+  },
+  {
+    label: "Total Providers",
+    value: analytics.total_providers.toLocaleString(),
+    spark: spark2,
+    color: "#22c55e",
+  },
+  {
+    label: "Total Bookings",
+    value: analytics.total_bookings.toLocaleString(),
+    spark: spark3,
+    color: "#e8a838",
+  },
+  {
+    label: "Completed Jobs",
+    value: analytics.completed_jobs.toLocaleString(),
+    spark: spark4,
+    color: "#a855f7",
+  },
+];
+
+const token = localStorage.getItem("token")
+
+const getAnalytics = async () => {
+  try {
+    const res = await axios.get("/admin/analytics", {
+      
+           headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      
+    });
+
+    if (res.data.status) {
+      setAnalytics(res.data.data);
+    }
+  } catch (error) {
+    console.error("Failed to fetch analytics:", error);
+  }
+};
+
+useEffect(() => {
+  getAnalytics();
+}, []);
+
+
+
   return (
     <div className="flex flex-col gap-5">
       <div className="w-full h-12.5 mt-2  flex justify-end  items-center">

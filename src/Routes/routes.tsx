@@ -12,6 +12,9 @@ import Chauffersriders from "../Admin/users/Providers"
 
 import Track from "../Admin/track"
 import Bookings from "../Admin/Bookings"
+import Payments from "../Admin/Payments"
+import Settings from "../Admin/Settings"
+import Payouts from "../Admin/Payouts"
 
 
 const routes = createBrowserRouter([
@@ -66,6 +69,18 @@ const routes = createBrowserRouter([
             {
                 path: "schedule",
                 element:<Bookings/>
+            }, 
+            {
+                path: "payments",
+                element: <Payments/>
+            }, 
+            {
+                path: "settings",
+                element:<Settings/>
+            }, 
+            {
+                path: "payouts",
+                element: <Payouts/>
             }
 
         ]

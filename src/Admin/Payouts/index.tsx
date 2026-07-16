@@ -89,7 +89,7 @@ const StatCard = ({
     rose: { bg: "bg-rose-50", ring: "bg-rose-100", text: "text-rose-500" },
   }[tone]
   return (
-    <div className={`flex items-center gap-4 rounded-xl border border-neutral-100 ${toneMap.bg} px-5 py-4`}>
+    <div className={`flex min-h-20 items-center gap-4 rounded-xl border border-neutral-100 ${toneMap.bg} px-4 py-4 shadow-sm sm:px-5`}>
       <div className={`flex h-11 w-11 items-center justify-center rounded-full ${toneMap.ring} ${toneMap.text}`}>
         {icon}
       </div>
@@ -175,8 +175,8 @@ const Payouts = () => {
   }, [rows.length, page, recordPerPage])
 
   return (
-    <div className="flex flex-col gap-5 p-6">
-      <h1 className="text-xl font-semibold text-neutral-900">Payouts overview</h1>
+    <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-6">
+      <h1 className="text-xl font-semibold tracking-tight text-neutral-900">Payouts overview</h1>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:max-w-xl">
         <StatCard
@@ -193,11 +193,11 @@ const Payouts = () => {
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <p className="text-sm text-neutral-500">All Payouts Made</p>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-lg bg-neutral-100 p-1">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex w-full rounded-lg bg-neutral-100 p-1 sm:w-auto">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
@@ -205,7 +205,7 @@ const Payouts = () => {
                   setActiveTab(tab.key)
                   setPage(1)
                 }}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                className={`min-h-10 flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none ${
                   activeTab === tab.key
                     ? "bg-neutral-900 text-white"
                     : "text-neutral-500 hover:text-neutral-800"
@@ -216,17 +216,17 @@ const Payouts = () => {
             ))}
           </div>
 
-          <form onSubmit={handleSearchSubmit} className="relative">
+          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-auto">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="w-56 rounded-lg border border-neutral-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-neutral-400"
+              className="h-10 w-full rounded-lg border border-neutral-200 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:w-56"
             />
           </form>
 
-          <button className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
+          <button className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-neutral-200 px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:flex-none">
             <SlidersHorizontal size={16} />
             Filters
           </button>
@@ -238,8 +238,8 @@ const Payouts = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-100">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <table className="min-w- w-full border-collapse">
           <thead>
             <tr className="bg-blue-600">
               <SortableHeader label="Payout ID" />
@@ -281,7 +281,7 @@ const Payouts = () => {
             {!loading &&
               !error &&
               rows.map((row, i) => (
-                <tr key={`${row.payoutId}-${i}`} className="border-t border-neutral-100 text-sm">
+                <tr key={`${row.payoutId}-${i}`} className="border-t border-neutral-100 text-sm transition-colors hover:bg-blue-50/40">
                   <td className="px-4 py-3 text-neutral-700">{row.payoutId}</td>
                   <td className="px-4 py-3 text-neutral-700">{row.payoutDate}</td>
                   <td className="px-4 py-3 text-neutral-700">{row.spId}</td>
@@ -301,7 +301,7 @@ const Payouts = () => {
         </table>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-neutral-400">
           {pageRangeLabel && `Showing ${pageRangeLabel}`}
         </p>

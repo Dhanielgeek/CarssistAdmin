@@ -15,6 +15,7 @@ import Bookings from "../Admin/Bookings"
 import Payments from "../Admin/Payments"
 import Settings from "../Admin/Settings"
 import Payouts from "../Admin/Payouts"
+import BroadcastMessages from "../Admin/Notfications"
 
 
 const routes = createBrowserRouter([
@@ -81,6 +82,10 @@ const routes = createBrowserRouter([
             {
                 path: "payouts",
                 element: <Payouts/>
+            },
+            {
+                path: "notifications",
+                element: <BroadcastMessages/>
             }
 
         ]

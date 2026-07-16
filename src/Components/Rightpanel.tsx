@@ -31,7 +31,7 @@ const RightPanel = () => {
   const [activeTab, setActiveTab] = useState("Today");
   return (
     <aside
-      className="fixed top-0 right-0 h-screen overflow-y-auto p-4"
+      className="fixed top-0 right-0 hidden h-screen overflow-y-auto p-4 xl:block"
       style={{
         width: 260,
         background: "#edf2f7",

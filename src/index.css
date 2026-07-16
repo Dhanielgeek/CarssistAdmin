@@ -4,4 +4,9 @@
 body{
       font-family: "Rubik", sans-serif;
   font-optical-sizing: auto;
+  background: #f5f6fa;
+}
+
+button, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
 }

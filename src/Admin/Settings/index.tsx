@@ -380,13 +380,13 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="inline-flex rounded-full bg-slate-100 p-1">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
+      <div className="mx-auto max-w-6xl rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="inline-flex w-full rounded-full bg-slate-100 p-1 sm:w-auto">
             <button
               onClick={() => setTab("roles")}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              className={`min-h-10 flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none ${
                 tab === "roles" ? "bg-slate-900 text-white" : "text-slate-500"
               }`}
             >
@@ -394,7 +394,7 @@ const Settings = () => {
             </button>
             <button
               onClick={() => setTab("logs")}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              className={`min-h-10 flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none ${
                 tab === "logs" ? "bg-slate-900 text-white" : "text-slate-500"
               }`}
             >
@@ -405,7 +405,7 @@ const Settings = () => {
           {tab === "roles" && (
             <button
               onClick={() => setModalOpen(true)}
-              className="px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              className="min-h-10 px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Add new
             </button>

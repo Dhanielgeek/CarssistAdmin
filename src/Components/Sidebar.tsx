@@ -10,16 +10,16 @@ import {
   Bell,
   CreditCard,
   Banknote,
-  Settings,
+  Settings, X,
 } from "lucide-react";
 import { useState } from "react";
 import logo from "../assets/carsisstlogo.png";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// interface SidebarProps {
-//   openSidebar: boolean;
-//   setopenSidebar: (val: boolean) => void;
-// }
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
 
 const mainNav = [
   {
@@ -68,20 +68,21 @@ const othersNav = [
   {
     icon: Bell,
     label: "Notifications",
-    children: [
-      { label: "Manage Notifications", path: "/admin/notifications" },
-      { label: "Send Notification", path: "/admin/notifications/send" },
-      { label: "All Notifications", path: "/admin/notifications/all" },
-      { label: "Motorist", path: "/admin/notifications/motorists" },
-      {
-        label: "Carssist Rider Notification",
-        path: "/admin/notifications/carssist-riders",
-      },
-      {
-        label: "Chauffer Rider Notification",
-        path: "/admin/notifications/chauffeur-riders",
-      },
-    ],
+    // children: [
+    //   { label: "Manage Notifications", path: "/admin/notifications" },
+    //   { label: "Send Notification", path: "/admin/notifications/send" },
+    //   { label: "All Notifications", path: "/admin/notifications/all" },
+    //   { label: "Motorist", path: "/admin/notifications/motorists" },
+    //   {
+    //     label: "Carssist Rider Notification",
+    //     path: "/admin/notifications/carssist-riders",
+    //   },
+    //   {
+    //     label: "Chauffer Rider Notification",
+    //     path: "/admin/notifications/chauffeur-riders",
+    //   },
+    // ],
+    path: "/admin/notifications"
   },
 
   {
@@ -105,8 +106,7 @@ const othersNav = [
   },
 ];
 
-const Sidebar = () => {
-  // { openSidebar, setopenSidebar }: SidebarProps
+const Sidebar = ({ open, onClose }: SidebarProps) => {
 
 const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -118,21 +118,8 @@ const location = useLocation();
 
   return (
     <aside
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        height: "100vh",
-        zIndex: 30,
-        display: "flex",
-        flexDirection: "column",
-        width: 197,
-        // width: openSidebar ? 240 : 72,
-
-        background: "#f0f2f5",
-        borderRight: "1px solid #e2e5ea",
-        transition: "width 0.3s",
-      }}
+      aria-label="Primary navigation"
+      className={`fixed inset-y-0 left-0 z-30 flex w-49.25 flex-col border-r border-[#e2e5ea] bg-[#f0f2f5] shadow-xl transition-transform duration-300 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}
     >
       {/* ── Header Card ── */}
       <div
@@ -144,13 +131,16 @@ const location = useLocation();
       >
        
           {/* Logo */}
-          <div className="h-20 flex justify-center items-center">
+          <div className="flex h-20 items-center justify-center">
             <img
               src={logo}
               alt="Logo"
               className="w-full h-full object-cover"
             />
           </div>
+          <button type="button" onClick={onClose} aria-label="Close navigation menu" className="absolute right-1 top-3 grid h-10 w-10 place-items-center rounded-lg text-slate-600 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 lg:hidden">
+            <X size={20} />
+          </button>
 
       
 
@@ -167,7 +157,7 @@ const location = useLocation();
       >
         <p
           style={{
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: 700,
             color: "#1a6ff5",
             letterSpacing: 1.2,
@@ -206,6 +196,7 @@ const isActive =
             setOpenDropdown(isOpen ? null : label);
           } else if (path) {
             nav(path);
+            onClose();
           }
         }}
         style={{
@@ -265,6 +256,7 @@ const isActive =
                 onClick={() => {
                  
                   nav(child.path);
+                  onClose();
                 }}
                 style={{
                   border: "none",
@@ -332,6 +324,7 @@ const isOpen =
     setOpenDropdown(isOpen ? null : label);
   } else if (path) {
     nav(path);
+    onClose();
   }
         }}
         style={{
@@ -354,7 +347,7 @@ const isOpen =
         <span
           style={{
             flex: 1,
-            fontSize: 14,
+            fontSize: 11,
             fontWeight: isActive ? 600 : 500,
           }}
         >
@@ -390,7 +383,8 @@ const isOpen =
                 key={child.path}
                 onClick={() => {
                
-                  nav(child.path);
+                nav(child.path);
+                onClose();
                 }}
                 style={{
                   border: "none",

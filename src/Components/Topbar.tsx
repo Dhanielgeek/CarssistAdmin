@@ -1,3 +1,4 @@
+import { Menu } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // topbarTabs.ts
@@ -73,36 +74,30 @@ export const topbarTabs = {
 };
 
 // const Topbar = ({ openSidebar }: TopbarProps) => {
-const Topbar = () => {
+const Topbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const location = useLocation();
   const nav = useNavigate();
 
   const tabs = getTabs(location.pathname);
 
-  // Don't render the topbar if there are no tabs
-  if (tabs.length === 0) {
-    return null;
-  }
-
   return (
     <header
-      className="flex items-center justify-between px-5 border-b"
+      className="flex h-14 items-center border-b bg-white px-3 sm:h-[60px] sm:px-5"
       style={{
-        height: 60,
-        background: "#ffffff",
         borderColor: "#eaecf3",
-        marginLeft: "4px",
-        transition: "margin-left 0.3s",
       }}
     >
-      <nav className="flex items-center gap-1 h-full overflow-x-auto">
+      <button type="button" onClick={onMenuClick} aria-label="Open navigation menu" className="mr-2 grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:hidden">
+        <Menu size={21} />
+      </button>
+      {tabs.length > 0 && <nav aria-label="Page navigation" className="flex h-full min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
 
           return (
             <button
               key={tab.path}
-              className="px-4 h-full text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+              className="h-full whitespace-nowrap border-b-2 px-3 text-sm font-medium transition-colors hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-4"
               style={{
                 borderBottomColor: isActive ? "#007AFF" : "transparent",
                 color: isActive ? "#007AFF" : "#8b94b2",
@@ -113,7 +108,7 @@ const Topbar = () => {
             </button>
           );
         })}
-      </nav>
+      </nav>}
     </header>
   );
 };

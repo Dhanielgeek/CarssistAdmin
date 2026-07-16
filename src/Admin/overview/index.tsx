@@ -138,11 +138,11 @@ useEffect(() => {
 
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="w-full h-12.5 mt-2  flex justify-end  items-center">
-        <div className="w-[11%] h-[70%] cursor-pointer rounded-md text-xs border flex justify-center gap-2 items-center">
+    <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6">
+      <div className="mt-1 flex h-10 w-full items-center justify-end">
+        <button type="button" className="flex h-9 min-w-24 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
 <CloudDownload  size={17}/> Export
-        </div>
+        </button>
       </div>
 
       {/* KPI Row 1 */}
@@ -218,7 +218,7 @@ useEffect(() => {
       </div>
 
       {/* % Metrics */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
           { label: "Booking Conversion Rate", value: "$340", sub: null },
           { label: "Booking Cancellation Rate", value: "70.4%", sub: null },
@@ -272,9 +272,9 @@ useEffect(() => {
 
       {/* Bar Chart */}
       <div className="rounded-xl p-5 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold" style={{ color: "#2d3452" }}>Platform Earnings by Month</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3">
             {[
               { label: "iOS", color: "#3b82f6" },
               { label: "Android", color: "#22c55e" },
@@ -292,9 +292,9 @@ useEffect(() => {
 
       {/* Revenue by Region heatmap */}
       <div className="rounded-xl p-5 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold" style={{ color: "#2d3452" }}>Revenue by Region</p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3">
             {[
               { label: "High", color: "#22c55e" },
               { label: "Medium", color: "#e8a838" },

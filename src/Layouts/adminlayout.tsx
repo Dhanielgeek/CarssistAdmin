@@ -1,11 +1,11 @@
-// import { useState } from "react";
+import { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Topbar from "../Components/Topbar";
 import RightPanel from "../Components/Rightpanel";
 import { Outlet, useLocation } from "react-router-dom";
 
 const Adminlayout = () => {
-  // const [openSidebar, setopenSidebar] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const location = useLocation();
 
@@ -20,22 +20,27 @@ const Adminlayout = () => {
   const showRightPanel = rightPanelRoutes.includes(location.pathname);
 
   return (
-    <div className="min-h-screen" style={{ background: "#f5f6fa" }}>
-      <Sidebar />
+    <div className="min-h-screen overflow-x-hidden" style={{ background: "#f5f6fa" }}>
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          className="fixed inset-0 z-20 bg-slate-950/30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {showRightPanel && <RightPanel />}
 
       <div
-        style={{
-          marginLeft: 201,
-          marginRight: showRightPanel ? 270 : 0,
-          transition: "margin 0.3s ease",
-          minHeight: "100vh",
-        }}
+        className={`min-h-screen transition-[margin] duration-300 lg:ml-[201px] ${
+          showRightPanel ? "xl:mr-[270px]" : ""
+        }`}
       >
-        <Topbar />
+        <Topbar onMenuClick={() => setSidebarOpen(true)} />
 
-        <main>
+        <main className="min-w-0">
           <Outlet />
         </main>
       </div>

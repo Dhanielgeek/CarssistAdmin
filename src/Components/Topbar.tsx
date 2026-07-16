@@ -4,6 +4,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 
 const getTabs = (pathname: string) => {
+  if (
+    pathname.startsWith("/admin/overview") ||
+    pathname.startsWith("/admin/performance-reports") ||
+    pathname.startsWith("/admin/financial-reports") ||
+    pathname.startsWith("/admin/user-reports") ||
+    pathname.startsWith("/admin/customer-satisfaction")
+  ) {
+    return topbarTabs.home;
+  }
+
   if (pathname.startsWith("/admin/users")) {
     return topbarTabs.users;
   }
@@ -16,18 +26,17 @@ const getTabs = (pathname: string) => {
     return topbarTabs.properties;
   }
 
-  if(pathname.startsWith("/admin/schedule")){
-    return topbarTabs.schedules
+  if (pathname.startsWith("/admin/schedule")) {
+    return topbarTabs.schedules;
   }
 
-  return topbarTabs.home;
+
+
+  // No matching tabs
+  return [];
 };
 
 export const topbarTabs = {
-
-
-
-
 
   home: [
     { label: "Overview", path: "/admin/overview" },
@@ -59,14 +68,21 @@ export const topbarTabs = {
 {    label: "Schedules", path: "/admin/schedule"}
   ],
 
+
+
 };
 
 // const Topbar = ({ openSidebar }: TopbarProps) => {
 const Topbar = () => {
-const location = useLocation();
-const nav = useNavigate();
+  const location = useLocation();
+  const nav = useNavigate();
 
-const tabs = getTabs(location.pathname);
+  const tabs = getTabs(location.pathname);
+
+  // Don't render the topbar if there are no tabs
+  if (tabs.length === 0) {
+    return null;
+  }
 
   return (
     <header
@@ -75,24 +91,21 @@ const tabs = getTabs(location.pathname);
         height: 60,
         background: "#ffffff",
         borderColor: "#eaecf3",
-
         marginLeft: "4px",
-        // marginLeft: openSidebar ? "200px" : "60px",
-
         transition: "margin-left 0.3s",
       }}
     >
-      {/* Tabs */}
       <nav className="flex items-center gap-1 h-full overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
+
           return (
             <button
               key={tab.path}
               className="px-4 h-full text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
               style={{
-             borderBottomColor: isActive ? "#007AFF" : "transparent",
-          color: isActive ? "#007AFF" : "#8b94b2",
+                borderBottomColor: isActive ? "#007AFF" : "transparent",
+                color: isActive ? "#007AFF" : "#8b94b2",
               }}
               onClick={() => nav(tab.path)}
             >
@@ -101,8 +114,6 @@ const tabs = getTabs(location.pathname);
           );
         })}
       </nav>
-
-  
     </header>
   );
 };

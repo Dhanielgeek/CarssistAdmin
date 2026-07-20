@@ -45,24 +45,73 @@ const barData = [
   { month: "Dec", ios: 52, android: 44, web: 36 },
 ]
 
-const regions = [
-  { name: "Region A", size: 2, color: "#22c55e" },
-  { name: "Region B", size: 1, color: "#22c55e" },
-  { name: "Region C", size: 2, color: "#e8a838" },
-  { name: "Region D", size: 1, color: "#22c55e" },
-  { name: "Reg", size: 1, color: "#ef4444" },
-  { name: "Top", size: 1, color: "#e8a838" },
-  { name: "Region E", size: 2, color: "#ef4444" },
-  { name: "Region F", size: 1, color: "#ef4444" },
-  { name: "Region G", size: 2, color: "#22c55e" },
-  { name: "Reg H", size: 1, color: "#e8a838" },
-  { name: "Region I", size: 2, color: "#3b82f6" },
-  { name: "Region J", size: 1, color: "#22c55e" },
-  { name: "Major Region Alpha", size: 3, color: "#22c55e" },
-  { name: "Region K", size: 1, color: "#e8a838" },
-  { name: "Major Region Beta", size: 3, color: "#ef4444" },
-  { name: "R L", size: 1, color: "#ef4444" },
-]
+type RevenueTier = "high" | "medium" | "low";
+
+interface RegionDetail {
+  name: string;
+  totalRevenue: string;
+  pctOfPlatform: string;
+  topService: string;
+  avgBookingValue: string;
+}
+
+interface RegionCell {
+  name: string;
+  tier: RevenueTier;
+  widthPercent: number;
+  detail: RegionDetail;
+}
+
+const tierColors: Record<RevenueTier, string> = {
+  high: "#22c55e",
+  medium: "#eab308",
+  low: "#ef4444",
+};
+
+const featuredRegion: RegionDetail = {
+  name: "Region",
+  totalRevenue: "\u20A6420 Million",
+  pctOfPlatform: "35%",
+  topService: "Car Assist",
+  avgBookingValue: "\u20A610,200",
+};
+
+const emptyRegionDetail = (name: string): RegionDetail => ({
+  name,
+  totalRevenue: "N/A",
+  pctOfPlatform: "N/A",
+  topService: "N/A",
+  avgBookingValue: "N/A",
+});
+
+// Row/cell proportions mirror the design's treemap exactly
+const regionRows: { heightPercent: number; cells: RegionCell[] }[] = [
+  {
+    heightPercent: 20,
+    cells: [
+      { name: "Region", tier: "high", widthPercent: 26, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "low", widthPercent: 16, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "low", widthPercent: 16, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "low", widthPercent: 20, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "medium", widthPercent: 26, detail: emptyRegionDetail("Region") },
+    ],
+  },
+  {
+    heightPercent: 38,
+    cells: [
+      { name: "Region", tier: "medium", widthPercent: 42, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "high", widthPercent: 42, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "high", widthPercent: 16, detail: emptyRegionDetail("Region") },
+    ],
+  },
+  {
+    heightPercent: 26,
+    cells: [
+      { name: "Region", tier: "medium", widthPercent: 42, detail: emptyRegionDetail("Region") },
+      { name: "Region", tier: "high", widthPercent: 58, detail: emptyRegionDetail("Region") },
+    ],
+  },
+];
 
 const Overview = () => {
 const [analytics, setAnalytics] = useState<Analytics>({
@@ -73,41 +122,126 @@ const [analytics, setAnalytics] = useState<Analytics>({
   total_revenue: "$0.00",
 });
 
+const [selectedRegion, setSelectedRegion] = useState<RegionDetail>(featuredRegion);
 
-const revenueCards = [
+// Group 1: user / provider / churn metrics — 3 rows of 4
+const userMetricCards = [
   {
-    label: "Total Revenue",
-    value: analytics.total_revenue,
+    label: "Total Users",
+    value: analytics.total_users ? analytics.total_users.toLocaleString() : "N/A",
+    spark: spark1,
+  },
+  {
+    label: "Active Users",
+    value: "N/A",
     spark: spark2,
-    color: "#22c55e",
+  },
+  {
+    label: "Total Customers",
+    value: "N/A",
+    spark: spark3,
+  },
+  {
+    label: "Active Customers",
+    value: "N/A",
+    spark: spark4,
+  },
+  {
+    label: "Total Service Providers",
+    value: analytics.total_providers ? analytics.total_providers.toLocaleString() : "N/A",
+    spark: spark1,
+  },
+  {
+    label: "Active Service Providers",
+    value: "N/A",
+    spark: spark2,
+  },
+  {
+    label: "Churned Users",
+    value: "N/A",
+    spark: spark3,
+  },
+  {
+    label: "Churned Customers",
+    value: "N/A",
+    spark: spark4,
+  },
+  {
+    label: "Churned Service Providers",
+    value: "N/A",
+    spark: spark1,
+  },
+  {
+    label: "Total Spa Assistants",
+    value: "N/A",
+    spark: spark2,
+  },
+  {
+    label: "Total Spa Chauffeur",
+    value: "N/A",
+    spark: spark3,
+  },
+  {
+    label: "Avg Service Provider Rating",
+    value: "N/A",
+    spark: spark4,
   },
 ];
 
+// Group 2: sits alone on its own row, exactly like the design
+const ratingCard = {
+  label: "Avg Customer Rating",
+  value: "N/A",
+  spark: spark2,
+};
 
-const statCards = [
-  {
-    label: "Total Users",
-    value: analytics.total_users.toLocaleString(),
-    spark: spark1,
-    color: "#3b82f6",
-  },
-  {
-    label: "Total Providers",
-    value: analytics.total_providers.toLocaleString(),
-    spark: spark2,
-    color: "#22c55e",
-  },
+// Group 3: booking / revenue metrics — 2 rows of 4
+const bookingMetricCards = [
   {
     label: "Total Bookings",
-    value: analytics.total_bookings.toLocaleString(),
-    spark: spark3,
-    color: "#e8a838",
+    value: analytics.total_bookings ? analytics.total_bookings.toLocaleString() : "N/A",
+    spark: spark1,
   },
   {
-    label: "Completed Jobs",
-    value: analytics.completed_jobs.toLocaleString(),
+    label: "Total Bookings $",
+    value: analytics.total_revenue || "N/A",
+    spark: spark2,
+  },
+  {
+    label: "Total Revenue $",
+    value: analytics.total_revenue || "N/A",
+    spark: spark3,
+  },
+  {
+    label: "Net Revenue",
+    value: "N/A",
     spark: spark4,
-    color: "#a855f7",
+  },
+  {
+    label: "Platform Commission Earned",
+    value: "N/A",
+    spark: spark1,
+  },
+  {
+    label: "Booking Fulfillment Rate",
+    value:
+      analytics.total_bookings > 0
+        ? `${(
+            (analytics.completed_jobs / analytics.total_bookings) *
+            100
+          ).toFixed(1)}%`
+        : "N/A",
+    spark: spark2,
+  },
+  {
+    label: "Booking Cancellation Rate",
+    value: "N/A",
+    spark: spark3,
+  },
+  {
+    label: "Bookings by New vs. Returning Customers",
+    value: "N/A",
+    spark: spark4,
   },
 ];
 
@@ -116,11 +250,11 @@ const token = localStorage.getItem("token")
 const getAnalytics = async () => {
   try {
     const res = await axios.get("/admin/analytics", {
-      
-           headers: {
+
+         headers: {
         Authorization: `Bearer ${token}`,
       },
-      
+
     });
 
     if (res.data.status) {
@@ -135,7 +269,23 @@ useEffect(() => {
   getAnalytics();
 }, []);
 
+const renderCard = (card: { label: string; value: string; spark: number[] }) => (
+  <div
+    key={card.label}
+    className="rounded-xl border bg-white p-4 shadow-sm"
+    style={{ borderColor: "#eaecf3" }}
+  >
+    <p className="mb-1 text-[11px] font-medium text-gray-500">{card.label}</p>
 
+    <div className="flex items-end justify-between">
+      <div>
+        <p className="text-xl font-bold text-[#2d3452]">{card.value}</p>
+      </div>
+
+      <Sparkline data={card.spark} color="#6BCB77" />
+    </div>
+  </div>
+);
 
   return (
     <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6">
@@ -145,30 +295,19 @@ useEffect(() => {
         </button>
       </div>
 
-      {/* KPI Row 1 */}
+      {/* Group 1 — Users / Providers / Churn (3 rows of 4, matches design exactly) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map(c => (
-          <div key={c.label} className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
-            <p className="text-xs mb-1 font-medium" style={{ color: "#575757" }}>{c.label}</p>
-            <div className="flex items-end justify-between">
-              <p className="text-xl font-bold" style={{ color: "#2d3452" }}>{c.value}</p>
-              <Sparkline data={c.spark} color={c.color} />
-            </div>
-          </div>
-        ))}
+        {userMetricCards.map(renderCard)}
       </div>
 
-      {/* KPI Row 2 */}
+      {/* Group 2 — Avg Customer Rating sits alone on its own row, same as the design */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {revenueCards.map(c => (
-          <div key={c.label} className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
-            <p className="text-xs mb-1 font-medium" style={{ color: "#575757" }}>{c.label}</p>
-            <div className="flex items-end justify-between">
-              <p className="text-xl font-bold" style={{ color: "#2d3452" }}>{c.value}</p>
-              <Sparkline data={c.spark} color={c.color} />
-            </div>
-          </div>
-        ))}
+        {renderCard(ratingCard)}
+      </div>
+
+      {/* Group 3 — Bookings / Revenue (2 rows of 4) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {bookingMetricCards.map(renderCard)}
       </div>
 
       {/* Ratings + Extra Stats Row */}
@@ -176,39 +315,46 @@ useEffect(() => {
         {/* Monthly Checkins */}
         <div className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
           <p className="text-xs mb-1" style={{ color: "#8b94b2" }}>Monthly Check-ins</p>
-          <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>200</p>
-          <div className="flex items-center gap-1 mt-1">
-            <Star size={12} fill="#e8a838" stroke="#e8a838" />
-            <span className="text-xs font-semibold" style={{ color: "#e8a838" }}>4.8 / 5</span>
-          </div>
+        <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>N/A</p>
+
+<div className="flex items-center gap-1 mt-1">
+  <Star size={12} fill="none" stroke="#d1d5db" />
+  <span className="text-xs font-semibold text-gray-400">N/A</span>
+</div>
         </div>
 
         {/* Avg Rating */}
         <div className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
           <p className="text-xs mb-1" style={{ color: "#8b94b2" }}>Star Rating Number</p>
-          <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>4.6/5</p>
-          <div className="flex gap-0.5 mt-1">
-            {[1,2,3,4,5].map(s => (
-              <Star key={s} size={12} fill={s <= 4 ? "#e8a838" : "#eaecf3"} stroke={s <= 4 ? "#e8a838" : "#eaecf3"} />
-            ))}
-          </div>
+        <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>N/A</p>
+
+<div className="flex gap-0.5 mt-1">
+  {[1, 2, 3, 4, 5].map((s) => (
+    <Star
+      key={s}
+      size={12}
+      fill="none"
+      stroke="#d1d5db"
+    />
+  ))}
+</div>
         </div>
 
         {/* Extra quick stats */}
         <div className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
           <p className="text-xs mb-1" style={{ color: "#8b94b2" }}>Avg. Booking Duration</p>
-          <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>4.6 / 5</p>
-          <Sparkline data={spark2} color="#e8a838" width={90} />
+       <p className="text-2xl font-bold" style={{ color: "#2d3452" }}>N/A</p>
+<Sparkline data={spark2} color="#d1d5db" width={90} />
         </div>
       </div>
 
       {/* Financial Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Bookings", value: "12000" },
-          { label: "Booking Revenue", value: "$304,000" },
-          { label: "Net Revenue", value: "$04,000" },
-          { label: "Gross Revenue", value: "$900 M" },
+          { label: "Total Bookings", value: "N/A" },
+  { label: "Booking Revenue", value: "N/A" },
+  { label: "Net Revenue", value: "N/A" },
+  { label: "Gross Revenue", value: "N/A" },
         ].map(s => (
           <div key={s.label} className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
             <p className="text-xs mb-1" style={{ color: "#8b94b2" }}>{s.label}</p>
@@ -219,10 +365,12 @@ useEffect(() => {
 
       {/* % Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {[
-          { label: "Booking Conversion Rate", value: "$340", sub: null },
-          { label: "Booking Cancellation Rate", value: "70.4%", sub: null },
-          { label: "Booking Rate vs Booking % Rate", value: "4.0%", sub: "68% / 60%" },
+        {
+        [
+  { label: "Booking Conversion Rate", value: "N/A", sub: null },
+  { label: "Booking Cancellation Rate", value: "N/A", sub: null },
+  { label: "Booking Rate vs Booking % Rate", value: "N/A", sub: null },
+
         ].map(s => (
           <div key={s.label} className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
             <p className="text-xs mb-1" style={{ color: "#8b94b2" }}>{s.label}</p>
@@ -293,36 +441,62 @@ useEffect(() => {
       {/* Revenue by Region heatmap */}
       <div className="rounded-xl p-5 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold" style={{ color: "#2d3452" }}>Revenue by Region</p>
-          <div className="flex flex-wrap gap-3">
+          <p className="text-base font-bold" style={{ color: "#111827" }}>Revenue By Region</p>
+          <div className="flex flex-wrap gap-4">
             {[
-              { label: "High", color: "#22c55e" },
-              { label: "Medium", color: "#e8a838" },
-              { label: "Low", color: "#ef4444" },
-              { label: "N/A", color: "#3b82f6" },
+              { label: "50% AND ABOVE", color: tierColors.high },
+              { label: "49% OR LESS", color: tierColors.medium },
+              { label: "LESS THAN 30%", color: tierColors.low },
             ].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
-                <span className="rounded-sm" style={{ width: 10, height: 10, background: l.color, display: "block" }} />
-                <span className="text-xs" style={{ color: "#8b94b2" }}>{l.label}</span>
+                <span className="rounded-full" style={{ width: 8, height: 8, background: l.color, display: "block" }} />
+                <span className="text-[10px] font-semibold tracking-wide text-gray-500">{l.label}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {regions.map((r, i) => (
-            <div
-              key={i}
-              className="rounded-lg flex items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity hover:opacity-80"
-              style={{
-                background: r.color,
-                padding: "8px 12px",
-                minWidth: r.size === 3 ? 140 : r.size === 2 ? 90 : 60,
-                opacity: 0.85 + i * 0.01,
-              }}
-            >
-              {r.name}
+
+        <div className="flex gap-0.5" style={{ height: 520 }}>
+          {/* Featured / left region with detail card overlay */}
+          <div
+            className="relative rounded-lg cursor-pointer overflow-hidden"
+            style={{ flexBasis: "32%", background: tierColors.high }}
+            onMouseEnter={() => setSelectedRegion(featuredRegion)}
+            onClick={() => setSelectedRegion(featuredRegion)}
+          >
+            <div className="absolute top-4 left-4 right-4 rounded-lg bg-white p-4 shadow-md">
+              <p className="text-sm font-bold text-gray-900">Region: {selectedRegion.name}</p>
+              <p className="text-sm font-bold text-gray-900">Total Revenue: {selectedRegion.totalRevenue}</p>
+              <p className="text-sm font-bold text-gray-900">% of Platform Revenue: {selectedRegion.pctOfPlatform}</p>
+              <p className="text-sm font-bold text-gray-900">Top Service: {selectedRegion.topService}</p>
+              <p className="text-sm font-bold text-gray-900">Avg. Booking Value: {selectedRegion.avgBookingValue}</p>
             </div>
-          ))}
+            <span className="absolute bottom-4 left-0 right-0 text-center text-white text-sm font-medium">
+              {featuredRegion.name}
+            </span>
+          </div>
+
+          {/* Treemap grid */}
+          <div className="flex flex-1 flex-col gap-1">
+            {regionRows.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex flex-1 gap-0.5 " style={{ flexBasis: `${row.heightPercent}%` }}>
+                {row.cells.map((cell, cellIndex) => (
+                  <div
+                    key={cellIndex}
+                    className="rounded-lg flex items-center  justify-center text-center text-white text-xs font-medium cursor-pointer transition-opacity hover:opacity-90"
+                    style={{
+                      flexBasis: `${cell.widthPercent}%`,
+                      background: tierColors[cell.tier],
+                    }}
+                    onMouseEnter={() => setSelectedRegion(cell.detail)}
+                    onClick={() => setSelectedRegion(cell.detail)}
+                  >
+                    {cell.name}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

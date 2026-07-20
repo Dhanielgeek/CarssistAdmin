@@ -44,12 +44,9 @@ const mainNav = [
     icon: MapPin,
     label: "Track",
     children: [
-      { label: "Manage Requests", path: "/admin/track" },
-      { label: "Pending Requests", path: "/admin/track/pending" },
-      { label: "In Progress Requests", path: "/admin/track/in-progress" },
-      { label: "Completed Requests", path: "/admin/track/completed" },
-      { label: "Canceled Requests", path: "/admin/track/cancelled" },
-      { label: "History", path: "/admin/track/history" },
+      { label: "Track", path: "/admin/track" },
+      { label: "All Requests", path: "/admin/track/all-request" },
+   
     ],
   },
 

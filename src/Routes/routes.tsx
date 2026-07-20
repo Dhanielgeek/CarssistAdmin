@@ -16,6 +16,7 @@ import Payments from "../Admin/Payments"
 import Settings from "../Admin/Settings"
 import Payouts from "../Admin/Payouts"
 import BroadcastMessages from "../Admin/Notfications"
+import AllRequest from "../Admin/track/allrequest"
 
 
 const routes = createBrowserRouter([
@@ -66,6 +67,10 @@ const routes = createBrowserRouter([
             {
                 path: "track",
                 element:<Track/>
+            },
+            {
+                path: "track/all-request",
+                element: <AllRequest/>
             },
             {
                 path: "schedule",

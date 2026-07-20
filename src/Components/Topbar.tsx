@@ -55,8 +55,8 @@ export const topbarTabs = {
   ],
 
   tracking: [
-    { label: "Track Requests", path: "/admin/track" },
-    { label: "History", path: "/admin/track/history" },
+    { label: "Track", path: "/admin/track" },
+    { label: "All Request", path: "/admin/track/all-request" },
   ],
 
   properties: [
@@ -82,7 +82,7 @@ const Topbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
 
   return (
     <header
-      className="flex h-14 items-center border-b bg-white px-3 sm:h-[60px] sm:px-5"
+      className="flex h-14 items-center border-b bg-white px-3 sm:h-15 sm:px-5"
       style={{
         borderColor: "#eaecf3",
       }}
@@ -90,7 +90,7 @@ const Topbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
       <button type="button" onClick={onMenuClick} aria-label="Open navigation menu" className="mr-2 grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:hidden">
         <Menu size={21} />
       </button>
-      {tabs.length > 0 && <nav aria-label="Page navigation" className="flex h-full min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+      {tabs.length > 0 && <nav aria-label="Page navigation" className="flex h-full min-w-0 items-center gap-1 overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
 

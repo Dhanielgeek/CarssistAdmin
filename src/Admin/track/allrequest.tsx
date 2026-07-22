@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronDown,
   Search,
@@ -6,6 +6,7 @@ import {
   Download,
   MoreVertical,
 } from "lucide-react";
+import axios from "../../Config/axiosconfig";
 
 type TabKey = "both" | "assist" | "chauffeur";
 
@@ -13,7 +14,7 @@ type StatusKey =
   | "Pending"
   | "Scheduled"
   | "In Transit"
-  | "Complete"
+  | "Completed"
   | "Cancelled";
 
 interface RequestRow {
@@ -38,27 +39,27 @@ interface RequestRow {
   status: StatusKey;
 }
 
-const ROWS: RequestRow[] = [
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Scheduled" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Cancelled" },
-  { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Cancelled" },
-];
+// const ROWS: RequestRow[] = [
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Scheduled" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Pending" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "In Transit" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "", spId: "12345", spName: "", spEmail: "", spPhoneNo: "+124567809872", serviceType: "Assist", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Complete" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Cancelled" },
+//   { requestId: "123456", requestDate: "12/04/2024", time: "08:53am", motoristId: "12345", motoristName: "James Adeleke", email: "Jamesadeleke@gmail.com", phoneNo: "+124567809872", location1: "Texas", location2: "New Jersey", spId: "12345", spName: "James Adeleke", spEmail: "Jamesadeleke@gmail.com", spPhoneNo: "+124567809872", serviceType: "Chaffeur", serviceCharge: "$34.00", commission: "$4", duration: "1h 30M", eta: "3:00PM", status: "Cancelled" },
+// ];
 
 const STATUS_STYLES: Record<StatusKey, string> = {
   Pending: "text-amber-500",
   Scheduled: "text-blue-500",
   "In Transit": "text-emerald-500",
-  Complete: "text-sky-500",
+  Completed: "text-sky-500",
   Cancelled: "text-red-500",
 };
 
@@ -86,6 +87,101 @@ const COLUMNS: { key: string; label: string }[] = [
 
 const AllRequest = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("both");
+
+  const [rows, setRows] = useState<RequestRow[]>([]);
+const [loading, setLoading] = useState(false);
+
+
+  const token = localStorage.getItem("token")
+
+
+  const displayValue = (value: any): string => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "N/A";
+  }
+
+  return String(value);
+};
+
+
+const getTracking = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get("/admin/bookings", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Bookings response:", res.data);
+
+    const bookings = res.data.data.bookings
+    console.log("this is the bookings:", bookings);
+    
+
+const formattedRows: RequestRow[] = bookings.map((booking: any) => ({
+  requestId: displayValue(booking.request_id),
+
+  requestDate: booking.request_date
+    ? new Date(booking.request_date).toLocaleDateString("en-GB")
+    : "N/A",
+
+  time: displayValue(booking.request_time),
+
+  // Motorist
+  motoristId: displayValue(booking.motorist_id),
+  motoristName: displayValue(booking.motorist_name || booking.customer_name),
+  email: displayValue(booking.customer_email),
+  phoneNo: displayValue(booking.customer_phone),
+
+  // Locations
+  location1: displayValue(booking.pickup_address),
+  location2: displayValue(booking.destination_address), // API doesn't currently return this
+
+  // Service Provider
+  spId: displayValue(booking.provider_id), // API doesn't currently return this
+  spName: displayValue(booking.provider_name), // API doesn't currently return this
+  spEmail: displayValue(booking.provider_email),
+  spPhoneNo: displayValue(booking.provider_phone),
+
+  // Booking
+  serviceType: displayValue(booking.service_type),
+
+  serviceCharge: displayValue(booking.price),
+
+  commission: displayValue(booking.commission),
+
+  duration: displayValue(booking.duration), // API doesn't currently return this
+
+  eta: displayValue(booking.eta), // API doesn't currently return this
+
+  status: displayValue(booking.status || "Pending") as StatusKey,
+}));
+    setRows(formattedRows);
+  } catch (error) {
+    console.log("Error fetching bookings:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+useEffect(()=>{
+  getTracking()
+},[])
+
+
+
+
+
+
+
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4 font-sans text-sm">
@@ -162,9 +258,28 @@ const AllRequest = () => {
                 <th className="w-8 px-3 py-3" />
               </tr>
             </thead>
-            <tbody>
-              {ROWS.map((row, i) => (
-                <tr
+          <tbody>
+  {loading ? (
+    <tr>
+      <td
+        colSpan={COLUMNS.length + 1}
+        className="py-10 text-center text-gray-500"
+      >
+        Loading bookings...
+      </td>
+    </tr>
+  ) : rows.length === 0 ? (
+    <tr>
+      <td
+        colSpan={COLUMNS.length + 1}
+        className="py-10 text-center text-gray-500"
+      >
+        No bookings found
+      </td>
+    </tr>
+  ) : (
+    rows.map((row, i) => (
+      <tr
                   key={i}
                   className="border-b border-gray-100 text-xs text-gray-700 hover:bg-gray-50"
                 >
@@ -200,15 +315,16 @@ const AllRequest = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+    ))
+  )}
+</tbody>
           </table>
         </div>
 
         {/* decorative horizontal scroll indicator, mirrors the table's real scrollbar */}
-        <div className="mx-3 mt-1 h-1.5 rounded-full bg-gray-100">
+        {/* <div className="mx-3 mt-1 h-1.5 rounded-full bg-gray-100">
           <div className="h-1.5 w-1/3 rounded-full bg-blue-500" />
-        </div>
+        </div> */}
       </div>
 
       {/* ---------------------------------------------------------- */}

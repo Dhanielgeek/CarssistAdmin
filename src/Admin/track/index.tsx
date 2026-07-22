@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   SlidersHorizontal,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import firstcar from '../../assets/firstcar.png'
 import secondcar from '../../assets/secondcar.png'
+import axios from "../../Config/axiosconfig";
 
 type TabKey = "both" | "assist" | "chauffeur";
 
@@ -18,6 +19,59 @@ const Track = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("both");
   const [chauffeurOpen, setChauffeurOpen] = useState(false);
   const [assistOpen, setAssistOpen] = useState(true);
+
+  const [bookings, setBookings] = useState<any[]>([]);
+
+  console.log(bookings);
+  
+const [loading, setLoading] = useState(false);
+console.log(loading);
+
+const [selectedBooking, setSelectedBooking] = useState<any>(null);
+
+
+
+const displayValue = (value: any) => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "N/A";
+  }
+
+  return String(value);
+};
+  const token = localStorage.getItem("token")
+
+ const getBookings = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get("/admin/bookings", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = res.data.data.bookings;
+
+    setBookings(data);
+
+    // Show the first booking initially
+    if (data.length > 0) {
+      setSelectedBooking(data[0]);
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(()=>{
+getBookings()
+  },[])
 
   return (
     <div className="flex h-screen w-full bg-gray-100 font-sans text-sm">
@@ -62,6 +116,7 @@ const Track = () => {
             </button>
           ))}
         </div>
+
 
         <div className="flex flex-col gap-3 px-4 ">
           {/* Chauffeur card (collapsed) */}
@@ -113,21 +168,21 @@ const Track = () => {
 
         <div>
             <h3 className="text-md font-bold text-neutral-900">
-                2972 Westheimer
+            {displayValue(selectedBooking?.pickup_address)}
             </h3>
 
             <p className="mt-1 text-md text-neutral-500">
-                Rd. Santa Ana, Illinois 85486
+                {displayValue(selectedBooking?.pickup_address)}
             </p>
         </div>
 
         <div className="mt-6">
             <h3 className="text-md font-bold text-neutral-900">
-                8502 Preston
+            {displayValue(selectedBooking?.destination_address)}
             </h3>
 
             <p className="mt-1 text-md text-neutral-500">
-                Rd. Inglewood, Maine 98380
+                {/* Rd. Inglewood, Maine 98380 */}
             </p>
         </div>
 
@@ -178,21 +233,28 @@ const Track = () => {
 
                   <div className="flex flex-1 flex-col justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-900">2972 Westheimer</h3>
-                      <p className="mt-1 text-xs text-neutral-500">Rd. Santa Ana, Illinois 85486</p>
+                      <h3 className="text-sm font-bold text-neutral-900">
+                        {displayValue(selectedBooking?.pickup_address)}
+                      </h3>
+                      <p className="mt-1 text-xs text-neutral-500">{displayValue(selectedBooking?.pickup_address)}</p>
                     </div>
 
                     <div className="mt-4">
-                      <h3 className="text-sm font-bold text-neutral-900">8502 Preston</h3>
-                      <p className="mt-1 text-xs text-neutral-500">Rd. Inglewood, Maine 98380</p>
+                      <h3 className="text-sm font-bold text-neutral-900">{displayValue(selectedBooking?.destination_address)}</h3>
+                      <p className="mt-1 text-xs text-neutral-500">{displayValue(selectedBooking?.destination_address)}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 border-t border-gray-100 pt-3">
-                  <DetailRow label="REQUEST DATE / TIME" value="12/04/2024 | 12:00PM" badgeText="DONE" badgeColor="bg-blue-500" />
-                  <DetailRow label="ETA:" value="12:45PM" badgeText="YET TO ARRIVE" badgeColor="bg-red-500" />
-                  <DetailRow label="SERVICE DELIVERY:" value="1:15PM" badgeText="STILL ON IT" badgeColor="bg-red-500" />
+                  <DetailRow
+                    label="REQUEST DATE / TIME"
+                    value={`${displayValue(selectedBooking?.request_date)} | ${displayValue(selectedBooking?.request_time)}`}
+                    badgeText={`${displayValue(selectedBooking?.status)}`}
+                    badgeColor="bg-blue-500"
+                  />
+                  <DetailRow label="ETA:" value={`${displayValue(selectedBooking?.eta)}`} badgeText="YET TO ARRIVE" badgeColor="bg-red-500" />
+                  <DetailRow label="SERVICE DELIVERY:" value={`${displayValue(selectedBooking?.created_at)}`} badgeText="STILL ON IT" badgeColor="bg-red-500" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3">
@@ -203,37 +265,36 @@ const Track = () => {
                   </div>
                   <p className="text-[11px] leading-4 text-gray-800">
                     Heading to :{" "}
-                    <span className="font-bold text-gray-900">2972 Westheimer</span> Rd. Santa Ana, Illinois 85486
+                    <span className="font-bold text-gray-900"> {displayValue(selectedBooking?.pickup_address)} </span>
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3">
                   <p className="text-xs font-bold text-gray-900">All Services</p>
                   <p className="text-[11px] leading-4 text-gray-800">
-                    All Services All All Services All Services All Services All
-                    Services All Services
+                   {displayValue(selectedBooking?.service_type)}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                   <p className="text-xs font-bold text-gray-900">Service Charge:</p>
-                  <p className="text-xs font-semibold text-gray-900">$24</p>
+                  <p className="text-xs font-semibold text-gray-900">{displayValue(selectedBooking?.price)}</p>
                 </div>
 
-                <PersonSection
-                  role="Driver"
-                  name="Chris Richard"
-                  phone="0852763849"
-                  carModel="Thunder Blaze"
-                  vin="ZAB-1234"
-                />
-                <PersonSection
-                  role="Customer"
-                  name="Chris Richard"
-                  phone="0852763849"
-                  carModel="Thunder Blaze"
-                  vin="ZAB-1234"
-                />
+   <PersonSection
+    role="Driver"
+    name={displayValue(selectedBooking?.motorist_name)}
+    phone={displayValue(selectedBooking?.provider_phone)}
+    carModel="N/A"
+    vin="N/A"
+/>
+             <PersonSection
+    role="Customer"
+    name={displayValue(selectedBooking?.customer_name)}
+    phone={displayValue(selectedBooking?.customer_phone)}
+    carModel="N/A"
+    vin="N/A"
+/>
               </div>
             )}
           </div>

@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Star, User as UserIcon } from "lucide-react"
 import Sparkline from "../../Components/Charts/sparkline"
 import CarThumb from "../../Components/carthumb"
+import axios from "../../Config/axiosconfig"
 
 // ─── mock data ──────────────────────────────────────────────────────────────
 
@@ -10,15 +11,7 @@ const wave = (base: number, spread: number, len: number, seed = 1) =>
     Math.round(base + Math.sin(i * 0.9 + seed) * spread + (i % 3 === 0 ? spread * 0.3 : 0)),
   )
 
-const kpiCards = [
-  { label: "Total Users", value: "100", color: "#0057b8", spark: wave(50, 20, 10, 1) },
-  { label: "Average Revenue Per Service", value: "$120", color: "#e5484d", spark: wave(45, 22, 10, 2) },
-  { label: "New Users", value: "100", color: "#0057b8", spark: wave(55, 18, 10, 3) },
-  { label: "Active Users", value: "100", color: "#0057b8", spark: wave(40, 20, 10, 4) },
-  { label: "User Retention Rate", value: "30%", color: "#0057b8", spark: wave(48, 20, 10, 5) },
-  { label: "Churn Rate", value: "30%", color: "#e5484d", spark: wave(42, 18, 10, 6) },
-  { label: "Average Session Duration", value: "2 hours", color: "#0057b8", spark: wave(38, 16, 10, 7) },
-]
+
 
 const carColors = ["#9aa3b8", "#f3f5f9", "#e5484d"]
 
@@ -53,7 +46,16 @@ const topChauffeurRiders = makeRows("23 Rides", ["Ada Nwosu", "Kunle Ajayi", "Ng
 
 // ─── small pieces ───────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, color, spark }: (typeof kpiCards)[number]) {
+
+
+type KpiCardProps = {
+  label: string
+  value: string | number
+  color: string
+  spark: number[]
+}
+
+function KpiCard({ label, value, color, spark }: KpiCardProps) {
   return (
     <div className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
       <div className="flex items-start gap-3">
@@ -154,6 +156,118 @@ type TabKey = (typeof tabs)[number]["key"]
 
 const UserReports = () => {
   const [tab, setTab] = useState<TabKey>("assist")
+
+
+  const token = localStorage.getItem("token");
+
+const [analytics, setAnalytics] = useState<any>(null);
+const [users, setUsers] = useState<any[]>([]);
+const [loading, setLoading] = useState(false);
+
+console.log(loading);
+
+
+  
+
+const getAllUsers = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get("/admin/users", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setUsers(res.data.data.users || []);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getAnalytics = async () => {
+  try {
+    const res = await axios.get("/admin/analytics", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.data.status) {
+      setAnalytics(res.data.data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+useEffect(()=>{
+  getAllUsers()
+  getAnalytics()
+},[])
+
+
+const activeUsers = users.filter(
+  (user) => user.status?.toLowerCase() === "active"
+).length;
+
+const inactiveUsers = users.filter(
+  (user) => user.status?.toLowerCase() === "inactive"
+).length;
+
+const newUsers = users.length;
+
+const kpiCards = [
+  {
+    label: "Total Users",
+    value: analytics?.total_users ?? "N/A",
+    color: "#0057b8",
+    spark: wave(50, 20, 10, 1),
+  },
+  {
+    label: "Average Revenue Per Service",
+    value: "N/A",
+    color: "#e5484d",
+    spark: wave(45, 22, 10, 2),
+  },
+  {
+    label: "New Users",
+    value: users.length ? newUsers : "N/A",
+    color: "#0057b8",
+    spark: wave(55, 18, 10, 3),
+  },
+  {
+    label: "Active Users",
+    value: users.length ? activeUsers : "N/A",
+    color: "#0057b8",
+    spark: wave(40, 20, 10, 4),
+  },
+  {
+    label: "User Retention Rate",
+    value: "N/A",
+    color: "#0057b8",
+    spark: wave(48, 20, 10, 5),
+  },
+  {
+    label: "Churn Rate",
+    value: users.length ? inactiveUsers : "N/A",
+    color: "#e5484d",
+    spark: wave(42, 18, 10, 6),
+  },
+  {
+    label: "Average Session Duration",
+    value: "N/A",
+    color: "#0057b8",
+    spark: wave(38, 16, 10, 7),
+  },
+];
+
+
+
+
+
 
   return (
     <div className="flex flex-col gap-5 mt-6 px-4">

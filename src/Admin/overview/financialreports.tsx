@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronDown } from "lucide-react"
 import Sparkline from "../../Components/Charts/sparkline"
 import SalesMap from "../../Components/Charts/worldmap"
 import MultiLineChart from "../../Components/Charts/multilinecharts"
+import axios from "../../Config/axiosconfig"
 
 // ─── mock data ──────────────────────────────────────────────────────────────
 
@@ -11,12 +12,7 @@ const wave = (base: number, spread: number, len: number, seed = 1) =>
     Math.round(base + Math.sin(i * 0.9 + seed) * spread + (i % 3 === 0 ? spread * 0.3 : 0)),
   )
 
-const kpiCards = [
-  { label: "Total Revenue", value: "$120", color: "#0057b8", spark: wave(50, 20, 10, 1) },
-  { label: "Average Revenue Per Service", value: "$120", color: "#e5484d", spark: wave(45, 22, 10, 2) },
-  { label: "Total Payouts", value: "$120", color: "#0057b8", spark: wave(55, 18, 10, 3) },
-  { label: "Outstanding Payments", value: "$120", color: "#0057b8", spark: wave(40, 20, 10, 4) },
-]
+
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
 
@@ -33,9 +29,19 @@ const seriesConfig = [
   { key: "unique", color: "#22c55e", label: "Unique Customers" },
 ]
 
+
+
 // ─── small pieces ───────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, color, spark }: (typeof kpiCards)[number]) {
+
+type KpiCardProps = {
+  label: string;
+  value: string | number;
+  color: string;
+  spark: number[];
+};
+
+function KpiCard({ label, value, color, spark }: KpiCardProps) {
   return (
     <div className="rounded-xl p-4 bg-white shadow-sm border" style={{ borderColor: "#eaecf3" }}>
       <div className="flex items-start gap-3">
@@ -67,6 +73,78 @@ type TabKey = (typeof tabs)[number]["key"]
 
 const FinancalReports = () => {
   const [tab, setTab] = useState<TabKey>("assist")
+
+
+ const token = localStorage.getItem("token");
+
+const [analytics, setAnalytics] = useState<any>(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+
+
+console.log(error, loading);
+
+
+const getAnalytics = async () => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get("/admin/analytics", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.data.status) {
+      setAnalytics(res.data.data);
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch analytics");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  getAnalytics();
+}, []);
+
+
+
+const kpiCards = [
+  {
+    label: "Total Revenue",
+    value: analytics?.total_revenue ?? "N/A",
+    color: "#0057b8",
+    spark: wave(50, 20, 10, 1),
+  },
+  {
+    label: "Average Revenue Per Service",
+    value:
+      analytics?.total_bookings && analytics?.total_revenue
+        ? (
+            Number(
+              analytics.total_revenue.replace("$", "")
+            ) / analytics.total_bookings
+          ).toFixed(2)
+        : "N/A",
+    color: "#e5484d",
+    spark: wave(45, 22, 10, 2),
+  },
+  {
+    label: "Total Payouts",
+    value: "N/A", // until backend provides it
+    color: "#0057b8",
+    spark: wave(55, 18, 10, 3),
+  },
+  {
+    label: "Outstanding Payments",
+    value: "N/A", // until backend provides it
+    color: "#0057b8",
+    spark: wave(40, 20, 10, 4),
+  },
+];
 
   return (
     <div className="flex flex-col gap-5 mt-2 px-3">

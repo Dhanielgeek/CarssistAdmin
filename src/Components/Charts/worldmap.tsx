@@ -1,25 +1,39 @@
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Search, Maximize2 } from "lucide-react"
+import { geoMercator, geoPath } from "d3-geo"
+import { feature } from "topojson-client"
 
 type CityBreakdown = { city: string; amount: string }
 
 export type MapRegion = {
-  id: string
+  id: string // ISO A3 code
   name: string
-  color: string
-  path: string
   totalSales: string
   cityBreakdown: CityBreakdown[]
   popularService: string
   avgFare: string
 }
 
+// Sales tiers -> color + label. Amount thresholds are parsed from totalSales.
+const TIERS = [
+  { key: "low", label: "Low sales", max: 20000, color: "#ef4444" }, // red
+  { key: "medium", label: "Medium sales", max: 35000, color: "#f5c518" }, // yellow
+  { key: "high", label: "High sales", max: Infinity, color: "#3b82f6" }, // blue
+] as const
+
+function parseAmount(value: string): number {
+  const n = Number(value.replace(/[^0-9.-]/g, ""))
+  return Number.isFinite(n) ? n : 0
+}
+
+function getTier(amount: number) {
+  return TIERS.find((t) => amount <= t.max) ?? TIERS[TIERS.length - 1]
+}
+
 const regions: MapRegion[] = [
   {
-    id: "us",
+    id: "USA",
     name: "United States",
-    color: "#f5a623",
-    path: "M35 55 C30 45 45 35 65 32 C90 28 115 35 125 48 C132 56 128 66 118 70 C122 78 116 88 104 88 C96 96 80 94 70 86 C58 90 44 84 40 72 C30 70 28 62 35 55 Z",
     totalSales: "$45,000",
     cityBreakdown: [
       { city: "Atlanta", amount: "$25,000" },
@@ -29,10 +43,8 @@ const regions: MapRegion[] = [
     avgFare: "$36",
   },
   {
-    id: "br",
+    id: "BRA",
     name: "Brazil",
-    color: "#e5484d",
-    path: "M100 130 C96 122 104 112 116 110 C130 108 142 116 146 130 C150 146 146 164 138 176 C132 186 120 190 112 182 C102 178 98 164 98 150 C96 142 96 136 100 130 Z",
     totalSales: "$32,400",
     cityBreakdown: [
       { city: "São Paulo", amount: "$19,000" },
@@ -42,10 +54,8 @@ const regions: MapRegion[] = [
     avgFare: "$21",
   },
   {
-    id: "ng",
+    id: "NGA",
     name: "Nigeria",
-    color: "#14b8a6",
-    path: "M200 118 C198 112 206 107 214 108 C222 109 226 116 224 123 C222 130 214 133 207 130 C201 128 200 123 200 118 Z",
     totalSales: "$18,900",
     cityBreakdown: [
       { city: "Lagos", amount: "$14,500" },
@@ -55,10 +65,8 @@ const regions: MapRegion[] = [
     avgFare: "$14",
   },
   {
-    id: "za",
+    id: "ZAF",
     name: "South Africa",
-    color: "#3b82f6",
-    path: "M204 155 C200 148 208 140 218 140 C228 140 234 148 232 158 C230 168 220 174 212 170 C206 168 204 162 204 155 Z",
     totalSales: "$21,300",
     cityBreakdown: [
       { city: "Cape Town", amount: "$12,000" },
@@ -68,10 +76,8 @@ const regions: MapRegion[] = [
     avgFare: "$19",
   },
   {
-    id: "in",
+    id: "IND",
     name: "India",
-    color: "#a855f7",
-    path: "M258 90 C254 80 264 70 278 70 C290 70 298 80 296 92 C300 102 296 116 286 122 C278 128 268 124 264 114 C258 108 256 98 258 90 Z",
     totalSales: "$51,200",
     cityBreakdown: [
       { city: "Mumbai", amount: "$28,000" },
@@ -81,10 +87,8 @@ const regions: MapRegion[] = [
     avgFare: "$9",
   },
   {
-    id: "au",
+    id: "AUS",
     name: "Australia",
-    color: "#22c55e",
-    path: "M300 165 C296 158 306 150 320 150 C334 150 344 158 342 168 C340 178 328 184 316 182 C306 180 302 172 300 165 Z",
     totalSales: "$14,700",
     cityBreakdown: [
       { city: "Sydney", amount: "$9,000" },
@@ -95,22 +99,72 @@ const regions: MapRegion[] = [
   },
 ]
 
-// faint unlabeled landmasses purely for visual context (Europe / rest of Asia)
-const backdropPaths = [
-  "M195 55 C192 48 200 40 212 40 C224 40 230 48 226 58 C222 68 210 72 200 66 C196 63 194 59 195 55 Z",
-  "M235 55 C232 45 250 34 275 34 C305 32 330 42 335 58 C340 74 325 88 300 88 C280 92 260 86 248 74 C238 68 234 62 235 55 Z",
-]
+const regionMap = new Map(regions.map((r) => [r.id, r]))
+
+// Precompute sales amount + tier + marker radius (sqrt scale) per region
+const salesValues = regions.map((r) => parseAmount(r.totalSales))
+const maxSales = Math.max(...salesValues)
+const minSales = Math.min(...salesValues)
+
+function radiusFor(amount: number) {
+  if (maxSales === minSales) return 10
+  const t = (Math.sqrt(amount) - Math.sqrt(minSales)) / (Math.sqrt(maxSales) - Math.sqrt(minSales))
+  return 6 + t * 10 // 6px - 16px
+}
 
 export default function SalesMap() {
   const [hovered, setHovered] = useState<MapRegion | null>(null)
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null)
   const [query, setQuery] = useState("")
+  const [worldFeatures, setWorldFeatures] = useState<any[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+      .then((res) => res.json())
+      .then((topo) => {
+        if (cancelled) return
+        const geojson: any = feature(topo, topo.objects.countries)
+        setWorldFeatures(geojson.features)
+      })
+      .catch((err) => console.error("Failed to load world map data:", err))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const projection = useMemo(
+    () => geoMercator().scale(120).translate([400, 260]),
+    []
+  )
+  const pathGenerator = useMemo(() => geoPath().projection(projection), [projection])
 
   const filtered = query
     ? regions.filter((r) => r.name.toLowerCase().includes(query.toLowerCase()))
     : regions
+  const filteredIds = new Set(filtered.map((r) => r.id))
+
+  // Centroids for placing sales indicator markers, computed once world data loads
+  const centroids = useMemo(() => {
+    if (!worldFeatures) return new Map<string, [number, number]>()
+    const map = new Map<string, [number, number]>()
+    worldFeatures.forEach((f: any) => {
+      const iso3 = f.properties?.ISO_A3 || f.properties?.iso_a3 || f.id
+      if (regionMap.has(iso3)) {
+        const c = pathGenerator.centroid(f)
+        if (c && !Number.isNaN(c[0]) && !Number.isNaN(c[1])) {
+          map.set(iso3, c as [number, number])
+        }
+      }
+    })
+    return map
+  }, [worldFeatures, pathGenerator])
 
   return (
-    <div className="rounded-xl p-5 bg-white shadow-sm border h-full flex flex-col" style={{ borderColor: "#eaecf3" }}>
+    <div
+      className="rounded-xl p-5 bg-white shadow-sm border h-full flex flex-col"
+      style={{ borderColor: "#eaecf3" }}
+    >
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold" style={{ color: "#2d3452" }}>
           Sales Mapping by Country
@@ -132,35 +186,98 @@ export default function SalesMap() {
         />
       </div>
 
-      <div className="relative flex-1">
-        <svg viewBox="0 0 400 220" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          {backdropPaths.map((d, i) => (
-            <path key={i} d={d} fill="#eef1f6" />
-          ))}
-          {regions.map((r) => {
-            const isMatch = filtered.some((f) => f.id === r.id)
-            return (
-              <path
-                key={r.id}
-                d={r.path}
-                fill={r.color}
-                opacity={query ? (isMatch ? 1 : 0.18) : 1}
-                stroke={hovered?.id === r.id ? "#14161f" : "transparent"}
-                strokeWidth={1.5}
-                className="cursor-pointer transition-opacity"
-                onMouseEnter={() => setHovered(r)}
-                onMouseLeave={() => setHovered(null)}
-              />
-            )
-          })}
-        </svg>
+      <div
+        className="relative flex-1"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+        }}
+      >
+        {!worldFeatures ? (
+          <div
+            className="flex items-center justify-center h-full text-xs"
+            style={{ color: "#8b94b2" }}
+          >
+            Loading map...
+          </div>
+        ) : (
+          <svg viewBox="0 0 800 520" className="w-full h-full">
+            {worldFeatures.map((f: any) => {
+              const iso3 = f.properties?.ISO_A3 || f.properties?.iso_a3 || f.id
+              const match = regionMap.get(iso3)
+              const isDimmed = query && ((match && !filteredIds.has(match.id)) || !match)
 
-        {hovered && (
+              return (
+                <path
+                  key={f.id ?? f.properties?.name ?? Math.random()}
+                  d={pathGenerator(f) || undefined}
+                  fill={match ? "#eef1f6" : "#f6f7fb"}
+                  stroke={hovered?.id === match?.id ? "#14161f" : "#ffffff"}
+                  strokeWidth={hovered?.id === match?.id ? 1.5 : 0.5}
+                  opacity={isDimmed ? 0.18 : 1}
+                  className="transition-opacity"
+                  style={{ cursor: match ? "pointer" : "default" }}
+                  onMouseEnter={() => match && setHovered(match)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              )
+            })}
+
+            {/* Sales indicator markers: colored by tier (red/yellow/blue), sized by sales volume */}
+            {regions.map((r) => {
+              const centroid = centroids.get(r.id)
+              if (!centroid) return null
+              const amount = parseAmount(r.totalSales)
+              const tier = getTier(amount)
+              const radius = radiusFor(amount)
+              const isDimmed = query && !filteredIds.has(r.id)
+              const isHovered = hovered?.id === r.id
+
+              return (
+                <g
+                  key={r.id}
+                  opacity={isDimmed ? 0.15 : 1}
+                  className="transition-opacity"
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={() => setHovered(r)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  {/* pulsing ring to signal active sales */}
+                  <circle
+                    cx={centroid[0]}
+                    cy={centroid[1]}
+                    r={radius}
+                    fill={tier.color}
+                    opacity={0.35}
+                    className="animate-ping"
+                    style={{ transformOrigin: `${centroid[0]}px ${centroid[1]}px` }}
+                  />
+                  <circle
+                    cx={centroid[0]}
+                    cy={centroid[1]}
+                    r={radius}
+                    fill={tier.color}
+                    stroke="#ffffff"
+                    strokeWidth={isHovered ? 2 : 1.5}
+                  />
+                </g>
+              )
+            })}
+          </svg>
+        )}
+
+        {hovered && hoverPos && (
           <div
             className="absolute z-20 w-56 rounded-lg bg-[#14161f] text-white p-3 text-[11px] leading-relaxed shadow-xl pointer-events-none"
-            style={{ left: "10%", top: "8%" }}
+            style={{ left: hoverPos.x + 12, top: hoverPos.y + 12 }}
           >
-            <p className="font-semibold text-[12px] mb-1.5">{hovered.name}</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span
+                className="inline-block w-2 h-2 rounded-full"
+                style={{ background: getTier(parseAmount(hovered.totalSales)).color }}
+              />
+              <p className="font-semibold text-[12px]">{hovered.name}</p>
+            </div>
             <p>Total Sales: {hovered.totalSales}</p>
             <p className="mt-1.5 font-semibold">City Breakdown:</p>
             {hovered.cityBreakdown.map((c) => (
@@ -172,6 +289,22 @@ export default function SalesMap() {
             <p>Average Fare per Ride: {hovered.avgFare}</p>
           </div>
         )}
+
+        {/* Legend: what red / yellow / blue mean */}
+        <div
+          className="absolute bottom-2 left-2 flex items-center gap-3 rounded-md bg-white/90 border px-3 py-1.5 text-[10px]"
+          style={{ borderColor: "#e2e6ee", color: "#2d3452" }}
+        >
+          {TIERS.map((t) => (
+            <div key={t.key} className="flex items-center gap-1">
+              <span
+                className="inline-block w-2 h-2 rounded-full"
+                style={{ background: t.color }}
+              />
+              <span>{t.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
